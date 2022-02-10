@@ -1,0 +1,9 @@
+{
+  "itemGroup.mountables2.ctab" : "Mountables 2",
+  "entity.mountables2.mountable" : "Mount",
+
+  "item.mountables2.mountable_core" : "Mountable Core",
+  "item.mountables2.mysterious_fragment" : "Mysterious Fragment",
+  "item.mountables2.command_chip" : "Command Chip",
+  "item.mountables2.mountable" : "Mount"
+}
