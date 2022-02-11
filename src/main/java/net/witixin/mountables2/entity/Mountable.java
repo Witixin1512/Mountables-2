@@ -307,10 +307,24 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         loadMountableData(Reference.findData(tag.getString("MOUNTABLE").toLowerCase()));
     }
 
+
     public static enum FOLLOW_TYPES {
         FOLLOW,
         STAY,
         WANDER;
     }
 
+
+    public static enum NON_RIDER {
+        WALK, SWIM, SLOW_WALK, JUMP, FLY;
+    }
+    public enum GROUND_MOVEMENT {
+        NONE, WALK, SLOW_WALK, HOP;
+    }
+    public enum WATER_MOVEMENT {
+        FLOAT, SWIM, SINK;
+    }
+    public enum FLYING_MOVEMENT {
+        NONE, FLY, HOP
+    }
 }
