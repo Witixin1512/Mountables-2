@@ -32,7 +32,7 @@ public class ServerUpdateMountModelPacket{
                 {
                     ServerLevel level = ctx.get().getSender().getLevel();
                     if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable){
-                        mountable.loadMountableData(packet.position);
+                        mountable.loadMountableData(mountable.getModelPosition() + packet.position);
                     }
                 }
         );

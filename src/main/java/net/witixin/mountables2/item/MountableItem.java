@@ -24,6 +24,8 @@ public class MountableItem extends Item {
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
             if (pContext.getItemInHand().getOrCreateTag().contains("FOLLOW_MODE")){
                 mountable.setFollowMode(pContext.getItemInHand().getTag().getString("FOLLOW_MODE"));
+                mountable.setModelPosition(pContext.getItemInHand().getTag().getInt("MODEL_POS"));
+                mountable.setAbsoluteEmissive(pContext.getItemInHand().getTag().getInt("TEX_POS"));
             }
             pContext.getLevel().addFreshEntity(mountable);
             mountable.loadDefault(pContext.getItemInHand().getOrCreateTag());

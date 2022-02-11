@@ -19,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 import net.witixin.mountables2.Reference;
+import net.witixin.mountables2.entity.goal.MountableFollowGoal;
+import net.witixin.mountables2.entity.goal.MountableWanderGoal;
 import net.witixin.mountables2.network.ClientOpenScreenPacket;
 import net.witixin.mountables2.network.PacketHandler;
 import org.antlr.v4.codegen.model.Sync;
@@ -54,7 +56,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     @Override
     protected void registerGoals(){
-
+        this.goalSelector.addGoal(3, new MountableFollowGoal(this));
+        this.goalSelector.addGoal(3, new MountableWanderGoal(this));
     }
 
 
@@ -74,6 +77,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         super.readAdditionalSaveData(tag);
         this.setUniqueName(tag.getString("unique_mountable_name"));
         this.setFollowMode(tag.getString("follow_mode"));
+        this.setEmissiveTexture(tag.getInt("emmisive_texture"));
+        this.setModelPosition(tag.getInt("model_position"));
     }
 
 
@@ -82,6 +87,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         super.addAdditionalSaveData(tag);
         tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
         tag.putString("follow_mode", getFollowMode());
+        tag.putInt("emissive_texture", getEmissiveTextureIndex());
+        tag.putInt("model_position", getModelPosition());
     }
 
 
@@ -185,9 +192,13 @@ public class Mountable extends TamableAnimal implements IAnimatable {
             ItemStack mountable_item = new ItemStack(Reference.MOUNTABLE.get());
             mountable_item.getOrCreateTag().putString("MOUNTABLE", this.getUniqueResourceLocation().getPath());
             mountable_item.getTag().putString("FOLLOW_MODE", this.getFollowMode());
+            mountable_item.getTag().putUUID("OWNER", this.getOwnerUUID());
+            mountable_item.getTag().putInt("MODEL_POS", this.getModelPosition());
+            mountable_item.getTag().putInt("TEX_POS", this.getEmissiveTextureIndex());
             this.spawnAtLocation(mountable_item);
+            return InteractionResult.SUCCESS;
         }
-        if (itemstack.getItem() == Reference.COMMAND_CHIP.get() && !pPlayer.level.isClientSide){
+        if (itemstack.getItem().equals(Reference.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide){
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()-> (ServerPlayer) pPlayer), new ClientOpenScreenPacket(this.getFollowMode(), this.getUUID(), MountableData.listToNBT(Reference.MOUNTABLE_MANAGER.get())));
             return InteractionResult.SUCCESS;
         }
@@ -263,10 +274,15 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
     //Should be server only
     public void setEmissiveTexture(int index){
+        index += getEmissiveTextureIndex();
         if (index == -2) index = this.getMountableData().emissiveTextures().size() - 1;
-        if (index >= this.getMountableData().emissiveTextures().size() -1) index = -1;
+        if (index >= this.getMountableData().emissiveTextures().size()) index = -1;
         this.entityData.set(EMISSIVE_TEXTURE, index);
     }
+    public void setAbsoluteEmissive(int index){
+        this.entityData.set(EMISSIVE_TEXTURE, index);
+    }
+
 
     public void setModelPosition(int index){
         if (index == -1) index = 0;
@@ -282,6 +298,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public void loadMountableData(int index){
+        if (index < 0) index = Reference.MOUNTABLE_MANAGER.get().size() - 1;
+        if (index >= Reference.MOUNTABLE_MANAGER.get().size()) index = 0;
         loadMountableData(Reference.MOUNTABLE_MANAGER.get().get(index));
     }
 
