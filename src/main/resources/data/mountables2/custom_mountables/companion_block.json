@@ -1,6 +1,6 @@
 {
   "unique_name" : "companion_block",
   "hitbox" : [2.0, 1.0],
-  "riding_position" : [0.0, 0.3, -0.4],
+  "riding_position" : [0.0, -0.1, 0.0],
   "emissive_textures" : ["companion_block_emissive", "companion_block_translucent"]
 }

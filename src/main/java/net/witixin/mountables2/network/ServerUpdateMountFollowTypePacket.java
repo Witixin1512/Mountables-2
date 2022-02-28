@@ -11,8 +11,7 @@ import java.util.function.Supplier;
 public class ServerUpdateMountFollowTypePacket{
     private final UUID uuid;
     private final String followMode;
-
-    public ServerUpdateMountFollowTypePacket(UUID id, String followMode){
+    public ServerUpdateMountFollowTypePacket(UUID id, String followMode, String empty){
         this.uuid = id;
         this.followMode = followMode;
     }
@@ -32,7 +31,7 @@ public class ServerUpdateMountFollowTypePacket{
         buf.writeUtf(followMode);
     }
     public static ServerUpdateMountFollowTypePacket decode(FriendlyByteBuf buf){
-        return new ServerUpdateMountFollowTypePacket(buf.readUUID(), buf.readUtf());
+        return new ServerUpdateMountFollowTypePacket(buf.readUUID(), buf.readUtf(), "");
     }
 
 }

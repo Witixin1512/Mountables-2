@@ -5,9 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.TextComponent;
-import net.witixin.mountables2.client.screen.base.ArrowSelectionWidget;
 import net.witixin.mountables2.network.PacketHandler;
-import software.bernie.geckolib3.core.util.Color;
 
 import java.util.UUID;
 

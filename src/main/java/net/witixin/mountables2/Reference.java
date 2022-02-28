@@ -45,7 +45,7 @@ public class Reference {
         }
     };
 
-    private static final Item.Properties DEFAULT_PROPERTIES = new Item.Properties().tab(CREATIVE_MODE_TAB).rarity(Rarity.EPIC);
+    private static final Item.Properties DEFAULT_PROPERTIES = new Item.Properties().tab(CREATIVE_MODE_TAB);
 
     public static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final RegistryObject<Item> MYSTERIOUS_FRAGMENT = ITEM_REGISTER.register("mysterious_fragment",
@@ -89,7 +89,7 @@ public class Reference {
 
 
     private void attributeCreation(final EntityAttributeCreationEvent event){
-        event.put(MOUNTABLE_ENTITY.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FLYING_SPEED, 0).add(Attributes.FOLLOW_RANGE, 10).add(Attributes.ATTACK_DAMAGE, 0).add(Attributes.JUMP_STRENGTH).build());
+        event.put(MOUNTABLE_ENTITY.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FLYING_SPEED, 0).add(Attributes.FOLLOW_RANGE, 10).add(Attributes.ATTACK_DAMAGE, 0).add(Attributes.JUMP_STRENGTH, 0.5).build());
     }
     private void resizeEntity(final EntityEvent.Size event){
         if (event.getEntity() instanceof Mountable mountable){

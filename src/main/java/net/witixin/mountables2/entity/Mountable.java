@@ -19,11 +19,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 import net.witixin.mountables2.Reference;
+import net.witixin.mountables2.entity.goal.MountableFloatGoal;
 import net.witixin.mountables2.entity.goal.MountableFollowGoal;
+import net.witixin.mountables2.entity.goal.MountableJumpControl;
 import net.witixin.mountables2.entity.goal.MountableWanderGoal;
 import net.witixin.mountables2.network.ClientOpenScreenPacket;
 import net.witixin.mountables2.network.PacketHandler;
-import org.antlr.v4.codegen.model.Sync;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -36,7 +37,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class Mountable extends TamableAnimal implements IAnimatable {
+public class Mountable extends TamableAnimal implements IAnimatable, PlayerRideableJumping {
 
     public static final String DEFAULT_NAME = "companion_block";
 
@@ -46,60 +47,52 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public static final EntityDataAccessor<Integer> EMISSIVE_TEXTURE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> MODEL_POSITION = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
 
+    public static final EntityDataAccessor<String> FREE_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+    public static final EntityDataAccessor<String> GROUND_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+    public static final EntityDataAccessor<String> WATER_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+    public static final EntityDataAccessor<String> FLIGHT_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+
+    public static final EntityDataAccessor<Boolean> CAN_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> CAN_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+
     private AnimationFactory factory = new AnimationFactory(this);
     private MountableData mountableData;
-    private float jumpingScaling = 0.0f;
 
     public Mountable(EntityType<Mountable> mountableEntityEntityType, Level level) {
         super(Reference.MOUNTABLE_ENTITY.get(), level);
+        this.moveControl = new MountableControl(this);
+        this.jumpControl = new MountableJumpControl(this);
     }
 
     @Override
     protected void registerGoals(){
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
+        this.goalSelector.addGoal(1, new MountableFloatGoal(this));
     }
 
 
     @Override
-    protected void defineSynchedData(){
-        super.defineSynchedData();
-        this.entityData.define(UNIQUE_NAME, DEFAULT_NAME);
-        this.entityData.define(IS_FLYING, false);
-        this.entityData.define(FOLLOW_TYPE, "FOLLOW");
-        this.entityData.define(EMISSIVE_TEXTURE, -1);
-        this.entityData.define(MODEL_POSITION, 0);
+    public boolean canBeRiddenInWater(Entity rider) {
+        return true;
+    }
+
+    @Override
+    public boolean isControlledByLocalInstance() {
+        return isVehicle();
+    }
+    public boolean canBeControlledByRider() {
+        return this.getControllingPassenger() instanceof LivingEntity;
+    }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource pSource) {
+        return super.isInvulnerableTo(pSource) || pSource.getMsgId().matches(DamageSource.FALL.getMsgId()) || pSource.getMsgId().matches(DamageSource.DROWN.getMsgId());
     }
 
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag){
-        super.readAdditionalSaveData(tag);
-        this.setUniqueName(tag.getString("unique_mountable_name"));
-        this.setFollowMode(tag.getString("follow_mode"));
-        this.setEmissiveTexture(tag.getInt("emmisive_texture"));
-        this.setModelPosition(tag.getInt("model_position"));
-    }
-
-
-    @Override
-    public void addAdditionalSaveData(CompoundTag tag){
-        super.addAdditionalSaveData(tag);
-        tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
-        tag.putString("follow_mode", getFollowMode());
-        tag.putInt("emissive_texture", getEmissiveTextureIndex());
-        tag.putInt("model_position", getModelPosition());
-    }
-
-
-    @Nullable
-    @Override
-    public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
-        return null;
-    }
-
-    @Override
-    public void travel(Vec3 pTravelVector) {
+    public void travel(Vec3 vectoring) {
         if (this.isAlive()) {
             if (this.isVehicle() && this.canBeControlledByRider()) {
                 LivingEntity livingentity = (LivingEntity) this.getControllingPassenger();
@@ -111,49 +104,92 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                 this.yHeadRot = this.yBodyRot;
                 float f = livingentity.xxa * 0.5F;
                 float f1 = livingentity.zza;
-                if (f1 <= 0.0F) {
-                    f1 *= 0.25F;
-                }
-
-                if (this.onGround && this.jumpingScaling == 0.0F) {
-                    f = 0.0F;
-                    f1 = 0.0F;
-                }
-
-                if (this.jumpingScaling > 0.0F && this.onGround) {
-                    Vec3 vec3 = this.getDeltaMovement();
-                    this.setDeltaMovement(vec3.x, this.getJumpBoostPower(), vec3.z);
+                this.flyingSpeed = this.getSpeed() * 0.1F;
+                if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && this.isOnGround() && !this.jumping){
+                    double d0 = this.getBlockJumpFactor();
+                    double d1 = d0 + this.getJumpBoostPower();
+                    this.setDeltaMovement(f, d1, f1);
+                    this.setJumping(true);
                     this.hasImpulse = true;
                     net.minecraftforge.common.ForgeHooks.onLivingJump(this);
-                    if (f1 > 0.0F) {
-                        float f2 = Mth.sin(this.getYRot() * ((float) Math.PI / 180F));
-                        float f3 = Mth.cos(this.getYRot() * ((float) Math.PI / 180F));
-                        this.setDeltaMovement(this.getDeltaMovement().add((double) (-0.4F * f2 * this.jumpingScaling), 0.0D, (double) (0.4F * f3 * this.jumpingScaling)));
+                }
+                if (this.isControlledByLocalInstance()) {
+                    if (this.isWalking()){
+                        this.setSpeed((float) this.getCurrentSpeed());
+                        super.travel(new Vec3(f, vectoring.y, f1));
                     }
 
-                    this.jumpingScaling = 0.0F;
-                }
-
-                this.flyingSpeed = this.getSpeed() * 0.1F;
-                if (this.isControlledByLocalInstance()) {
-                    this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-                    super.travel(new Vec3((double) f, pTravelVector.y, (double) f1));
                 } else if (livingentity instanceof Player) {
                     this.setDeltaMovement(Vec3.ZERO);
                 }
-
                 if (this.onGround) {
-                    this.jumpingScaling = 0.0F;
+                    this.jumping = false;
                 }
 
                 this.calculateEntityAnimation(this, false);
                 this.tryCheckInsideBlocks();
             } else {
                 this.flyingSpeed = 0.02F;
-                super.travel(pTravelVector);
+                super.travel(vectoring);
             }
         }
     }
+
+    @Override
+    protected void defineSynchedData(){
+        super.defineSynchedData();
+        this.entityData.define(UNIQUE_NAME, DEFAULT_NAME);
+        this.entityData.define(IS_FLYING, false);
+        this.entityData.define(FOLLOW_TYPE, "FOLLOW");
+        this.entityData.define(EMISSIVE_TEXTURE, -1);
+        this.entityData.define(MODEL_POSITION, 0);
+        this.entityData.define(FREE_MODE, NON_RIDER.WALK.name());
+        this.entityData.define(GROUND_MODE, GROUND_MOVEMENT.WALK.name());
+        this.entityData.define(WATER_MODE, WATER_MOVEMENT.FLOAT.name());
+        this.entityData.define(FLIGHT_MODE, FLYING_MOVEMENT.NONE.name());
+        this.entityData.define(CAN_FLY, false);
+        this.entityData.define(CAN_SWIM, false);
+    }
+
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag){
+        super.readAdditionalSaveData(tag);
+        this.setUniqueName(tag.getString("unique_mountable_name"));
+        this.setFollowMode(tag.getString("follow_mode"));
+        this.setEmissiveTexture(tag.getInt("emmisive_texture"));
+        this.setModelPosition(tag.getInt("model_position"));
+        this.setFreeMode(tag.getString("free_mode"));
+        this.setGroundMode(tag.getString("ground_mode"));
+        this.setWaterMode(tag.getString("water_mode"));
+        this.setFlightMode(tag.getString("flight_mode"));
+        this.setFreeFly(tag.getBoolean("free_flight"));
+        this.setFreeSwim(tag.getBoolean("free_swim"));
+    }
+
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag){
+        super.addAdditionalSaveData(tag);
+        tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
+        tag.putString("follow_mode", getFollowMode());
+        tag.putInt("emissive_texture", getEmissiveTextureIndex());
+        tag.putInt("model_position", getModelPosition());
+        tag.putString("free_mode", this.getFreeMode());
+        tag.putString("ground_mode", this.getGroundMode());
+        tag.putString("water_mode", this.getWaterMode());
+        tag.putString("flight_mode", this.getFlightMode());
+        tag.putBoolean("free_flight", this.canFreeFly());
+        tag.putBoolean("free_swim", this.canFreeSwim());
+    }
+
+
+    @Nullable
+    @Override
+    public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
+        return null;
+    }
+
 
     @Override
     public boolean isBaby() {
@@ -167,14 +203,29 @@ public class Mountable extends TamableAnimal implements IAnimatable {
             Mob mob = (Mob)pPassenger;
             this.yBodyRot = mob.yBodyRot;
         }
-            float f3 = Mth.sin(this.yBodyRot * ((float)Math.PI / 180F));
-            float f = Mth.cos(this.yBodyRot * ((float)Math.PI / 180F));
             MountableData data = this.getMountableData();
             pPassenger.setPos(this.getX() + data.position()[0], this.getY() + data.position()[1], this.getZ() + data.position()[2]);
             if (pPassenger instanceof LivingEntity) {
                 ((LivingEntity)pPassenger).yBodyRot = this.yBodyRot;
             }
 
+    }
+
+    public boolean isWalking(){
+        return this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name()) || this.getGroundMode().matches(GROUND_MOVEMENT.WALK.name());
+    }
+
+    private double getCurrentSpeed(){
+         double defaultSpeed = this.getAttribute(Attributes.MOVEMENT_SPEED).getValue();
+         if (this.isWalking()){
+             if (this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name())){
+                 return defaultSpeed * 0.5;
+             }
+             else if (this.getGroundMode().matches(GROUND_MOVEMENT.WALK.name())){
+                 return defaultSpeed;
+             }
+         }
+         return 0.5f;
     }
 
     protected void doPlayerRide(Player pPlayer) {
@@ -198,8 +249,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
             this.spawnAtLocation(mountable_item);
             return InteractionResult.SUCCESS;
         }
-        if (itemstack.getItem().equals(Reference.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide){
-            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()-> (ServerPlayer) pPlayer), new ClientOpenScreenPacket(this.getFollowMode(), this.getUUID(), MountableData.listToNBT(Reference.MOUNTABLE_MANAGER.get())));
+        if (itemstack.getItem().equals(Reference.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide && this.getOwnerUUID().equals(pPlayer.getUUID())){
+            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()-> (ServerPlayer) pPlayer), new ClientOpenScreenPacket(this.getUUID(), this.getFollowMode(), this.getFreeMode(), this.getGroundMode(), this.getWaterMode(), this.getFlightMode(), this.canFreeSwim(), this.canFreeFly()));
             return InteractionResult.SUCCESS;
         }
         if (!this.isVehicle() && !pPlayer.level.isClientSide && pPlayer.getMainHandItem().getItem() != Reference.COMMAND_CHIP.get()) {
@@ -307,6 +358,61 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         loadMountableData(Reference.findData(tag.getString("MOUNTABLE").toLowerCase()));
     }
 
+    public boolean canFreeFly(){return entityData.get(CAN_FLY);}
+    public boolean canFreeSwim(){return entityData.get(CAN_SWIM);}
+    public void setFreeFly(boolean value){this.entityData.set(CAN_FLY, value);}
+    public void setFreeSwim(boolean value){this.entityData.set(CAN_SWIM, value);}
+
+    public void setFreeMode(String s){
+        if (enumContainsName(NON_RIDER.values(), s)){
+            this.entityData.set(FREE_MODE, s);
+        }
+    }
+    public String getFreeMode(){
+        return this.entityData.get(FREE_MODE);
+    }
+    public void setGroundMode(String s){
+        if (enumContainsName(GROUND_MOVEMENT.values(), s)){
+            this.entityData.set(GROUND_MODE,s);
+        }
+    }
+    public String getGroundMode(){
+        return this.entityData.get(GROUND_MODE);
+    }
+    public void setWaterMode(String s){
+        if (enumContainsName(WATER_MOVEMENT.values(), s)){
+            this.entityData.set(WATER_MODE, s);
+        }
+    }
+    public String getWaterMode(){return this.entityData.get(WATER_MODE);}
+    public String getFlightMode(){return this.entityData.get(FLIGHT_MODE);}
+    public void setFlightMode(String s){
+        if (enumContainsName(FLYING_MOVEMENT.values(), s)){
+            this.entityData.set(FLIGHT_MODE, s);
+        }
+    }
+
+    @Override
+    public void onPlayerJump(int pJumpPower) {
+
+    }
+
+    @Override
+    public boolean canJump() {
+        return true;
+    }
+
+    @Override
+    public void handleStartJump(int pJumpPower) {
+        if (pJumpPower >= 30){
+            this.jumpFromGround();
+        }
+    }
+
+    @Override
+    public void handleStopJump() {
+
+    }
 
     public static enum FOLLOW_TYPES {
         FOLLOW,
@@ -314,9 +420,12 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         WANDER;
     }
 
+    private static boolean enumContainsName(Enum[] objects, String s){
+        return Arrays.stream(objects).anyMatch(value -> value.name().matches(s));
+    }
 
     public static enum NON_RIDER {
-        WALK, SWIM, SLOW_WALK, JUMP, FLY;
+        WALK, JUMP, SLOW_WALK;
     }
     public enum GROUND_MOVEMENT {
         NONE, WALK, SLOW_WALK, HOP;
