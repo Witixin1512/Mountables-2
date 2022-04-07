@@ -9,8 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.witixin.mountables2.entity.MountableData;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,6 @@ public class MountableManager extends SimpleJsonResourceReloadListener implement
 
     private static final Gson GSON = new Gson();
     private List<MountableData> mountable_list = new ArrayList<>();
-
 
     public MountableManager(String p_10769_) {
         super(GSON, p_10769_);
@@ -52,10 +50,16 @@ public class MountableManager extends SimpleJsonResourceReloadListener implement
                 JsonArray emissive_textures = GsonHelper.getAsJsonArray(obj, "emissive_textures");
                 List<String> list = new ArrayList<>();
                 emissive_textures.forEach(jsonElement -> list.add(jsonElement.getAsString()));
-                mountable_list.add(new MountableData(s.toLowerCase(), d1, d0, new Double[]{posX, posY, posZ}, list));
+
+                boolean b3 = GsonHelper.getAsBoolean(obj, "canFly");
+                boolean b1 = GsonHelper.getAsBoolean(obj, "canSwim");
+                boolean b2 = GsonHelper.getAsBoolean(obj, "canWalk");
+
+                mountable_list.add(new MountableData(s.toLowerCase(), d1, d0, new Double[]{posX, posY, posZ}, list, new Boolean[]{b1, b2, b3}));
+                LogManager.getLogger("mountables2").info("Registered a new mountable under the name: " + s);
             }
             catch (Exception e ) {
-                System.out.println("Error parsing mountable data! " + location.toString());
+                System.out.println("Error parsing mountable data for resource location: " + location.toString());
                 e.printStackTrace();
             }
         }

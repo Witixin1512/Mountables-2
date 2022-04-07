@@ -1,14 +1,15 @@
-package net.witixin.mountables2.network;
+package net.witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.entity.Mountable;
+import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ServerUpdateMountFollowTypePacket{
+public class ServerUpdateMountFollowTypePacket extends DefaultPacket {
     private final UUID uuid;
     private final String followMode;
     public ServerUpdateMountFollowTypePacket(UUID id, String followMode, String empty){

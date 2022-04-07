@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "mountables2:command_chip",
+    "count": 1
+  },
+  "pattern": [
+    " A ",
+    "AIA",
+    " A "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:redstone_torch"
+    },
+    "A": {
+      "item": "mountables2:mysterious_fragment"
+    }
+  }
+}

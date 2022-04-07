@@ -5,10 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.witixin.mountables2.Reference;
+import net.witixin.mountables2.data.MountableInfo;
 import net.witixin.mountables2.entity.Mountable;
-import net.witixin.mountables2.network.ServerUpdateMountAIPacket;
-
-import java.util.UUID;
+import net.witixin.mountables2.network.server.ServerUpdateMountAIPacket;
 
 public class MountableAIScreen extends CommandChipScreen {
 
@@ -39,37 +38,39 @@ public class MountableAIScreen extends CommandChipScreen {
     private final SwitchableWidget FLIGHT = new SwitchableWidget(160, 80, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, Mountable.FLYING_MOVEMENT.FLY.name());
     private final SwitchableWidget AIR_HOP = new SwitchableWidget(160, 110, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, Mountable.FLYING_MOVEMENT.HOP.name());
 
-    public MountableAIScreen(UUID mountableID, String followMode, String freeMode, String groundMode, String waterMode, String flyingMode, boolean waterState, boolean flightState) {
-        super(new TextComponent("ai_selection_screen"), mountableID, followMode, freeMode, groundMode, waterMode, flyingMode, waterState, flightState);
+    public MountableAIScreen(MountableInfo info) {
+        super(new TextComponent("ai_selection_screen"), info);
     }
 
     @Override
     protected void init() {
-        this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256)  /2, 100, 60, trackedMountable, this.NON_RIDER_MODE, ServerUpdateMountAIPacket.class, Mountable.NON_RIDER.class.getSimpleName(), WALK, SLOW_WALK, JUMP));
-
-        this.SWIM_WIDGET = this.addRenderableWidget(new IndividualSwitchableWidget((this.width - 128) /2-140, (this.height-256)  /2 + 140, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, "SWIM", true, trackedMountable, waterState));
-        this.FLY_WIDGET = this.addRenderableWidget(new IndividualSwitchableWidget((this.width - 128) /2-140, (this.height-256)  /2 + 170, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, "FLY", false, trackedMountable, flightState));
-
-        this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 80, trackedMountable, this.GROUND_MODE, ServerUpdateMountAIPacket.class, Mountable.GROUND_MOVEMENT.class.getSimpleName(), NONE, GROUND_SLOW_WALK, GROUND_WALK, HOP));
-
-        this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 60, trackedMountable, this.WATER_MODE, ServerUpdateMountAIPacket.class, Mountable.WATER_MOVEMENT.class.getSimpleName(), FLOAT, SINK, WATER_SWIM));
-
-        this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 60, trackedMountable, this.FLYING_MODE, ServerUpdateMountAIPacket.class, Mountable.FLYING_MOVEMENT.class.getSimpleName(), AIR_NONE, FLIGHT, AIR_HOP));
-
+        if (this.canSwim){
+            this.SWIM_WIDGET = this.addRenderableWidget(new IndividualSwitchableWidget((this.width - 128) /2-140, (this.height-256)  /2 + 140, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, "SWIM", true, trackedMountable, waterState));
+            this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 60, trackedMountable, this.WATER_MODE, ServerUpdateMountAIPacket.class, Mountable.WATER_MOVEMENT.class.getSimpleName(), FLOAT, SINK, WATER_SWIM));
+        }
+        if (this.canWalk) {
+            this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256)  /2, 100, 60, trackedMountable, this.NON_RIDER_MODE, ServerUpdateMountAIPacket.class, Mountable.NON_RIDER.class.getSimpleName(), WALK, SLOW_WALK, JUMP));
+            this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 80, trackedMountable, this.GROUND_MODE, ServerUpdateMountAIPacket.class, Mountable.GROUND_MOVEMENT.class.getSimpleName(), NONE, GROUND_SLOW_WALK, GROUND_WALK, HOP));
+        }
+        if (this.canFly){
+            this.FLY_WIDGET = this.addRenderableWidget(new IndividualSwitchableWidget((this.width - 128) /2-140, (this.height-256)  /2 + 170, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, "FLY", false, trackedMountable, flightState));
+            this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 60, trackedMountable, this.FLYING_MODE, ServerUpdateMountAIPacket.class, Mountable.FLYING_MOVEMENT.class.getSimpleName(), AIR_NONE, FLIGHT, AIR_HOP));
+        }
         this.SCREEN_CHANGE_WIDGET = addRenderableWidget(new SwitchableWidget(((this.width - 128) / 2 + 10),(this.height -256 )/2 + 200 , 100, 20,  BIG_BUTTON_OFF, BIG_BUTTON_ON, "Mountable"));
     }
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         if (SCREEN_CHANGE_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
-            Minecraft.getInstance().setScreen(new CommandChipScreen(new TextComponent("commandchipscreen"), trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, this.waterState, this.flightState));
+            MountableInfo info = new MountableInfo(trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, this.waterState, this.flightState, this.canSwim, this.canWalk, this.canFly);
+            Minecraft.getInstance().setScreen(new CommandChipScreen(new TextComponent("commandchipscreen"), info));
         }
-        if (SWIM_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
+        if (SWIM_WIDGET != null && SWIM_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
             SWIM_WIDGET.setEnabled(!SWIM_WIDGET.isEnabled());
             SWIM_WIDGET.sendPacket();
             this.updateFreeButton(SWIM_WIDGET.isWater(), SWIM_WIDGET.isEnabled());
         }
-        if (FLY_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
+        if (FLY_WIDGET != null && FLY_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
             FLY_WIDGET.setEnabled(!FLY_WIDGET.isEnabled());
             FLY_WIDGET.sendPacket();
             this.updateFreeButton(FLY_WIDGET.isWater(), FLY_WIDGET.isEnabled());
@@ -90,10 +91,18 @@ public class MountableAIScreen extends CommandChipScreen {
     @Override
     public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-        Minecraft.getInstance().font.drawShadow(pPoseStack, "AI", (this.width -128)/2 - 90 - Minecraft.getInstance().font.width("AI") / 2, (this.height -256 )/2 + 30, 0xffffff);
-        Minecraft.getInstance().font.drawShadow(pPoseStack, "Walk", (this.width -128)/2 + 10 - Minecraft.getInstance().font.width("Walk") / 2, (this.height -256 )/2 + 30, 0xffffff);
-        Minecraft.getInstance().font.drawShadow(pPoseStack, "Swim", (this.width -128)/2 + 110 - Minecraft.getInstance().font.width("Swim") / 2, (this.height -256 )/2 + 30, 0xffffff);
-        Minecraft.getInstance().font.drawShadow(pPoseStack, "Fly", (this.width -128)/2 + 210 - Minecraft.getInstance().font.width("Fly") / 2, (this.height -256 )/2 + 30, 0xffffff);
+        if (canSwim ||canFly || canWalk){
+            Minecraft.getInstance().font.drawShadow(pPoseStack, "AI", (this.width -128)/2 - 90 - Minecraft.getInstance().font.width("AI") / 2, (this.height -256 )/2 + 30, 0xffffff);
+        }
+        if (canSwim){
+            Minecraft.getInstance().font.drawShadow(pPoseStack, "Swim", (this.width -128)/2 + 110 - Minecraft.getInstance().font.width("Swim") / 2, (this.height -256 )/2 + 30, 0xffffff);
+        }
+        if (canWalk){
+            Minecraft.getInstance().font.drawShadow(pPoseStack, "Walk", (this.width -128)/2 + 10 - Minecraft.getInstance().font.width("Walk") / 2, (this.height -256 )/2 + 30, 0xffffff);
+        }
+        if (canFly){
+            Minecraft.getInstance().font.drawShadow(pPoseStack, "Fly", (this.width -128)/2 + 210 - Minecraft.getInstance().font.width("Fly") / 2, (this.height -256 )/2 + 30, 0xffffff);
+        }
     }
 
     public void setType(String type, String value){

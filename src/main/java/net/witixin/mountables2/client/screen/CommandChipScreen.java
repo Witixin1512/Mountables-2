@@ -5,10 +5,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.witixin.mountables2.Reference;
+import net.witixin.mountables2.data.MountableInfo;
 import net.witixin.mountables2.entity.Mountable;
-import net.witixin.mountables2.network.ServerUpdateMountFollowTypePacket;
-import net.witixin.mountables2.network.ServerUpdateMountModelPacket;
-import net.witixin.mountables2.network.ServerUpdateMountTexturePacket;
+import net.witixin.mountables2.network.server.ServerUpdateMountFollowTypePacket;
+import net.witixin.mountables2.network.server.ServerUpdateMountModelPacket;
+import net.witixin.mountables2.network.server.ServerUpdateMountTexturePacket;
 
 import java.util.UUID;
 
@@ -22,6 +23,10 @@ public class CommandChipScreen extends Screen {
     protected String FLYING_MODE;
     protected boolean waterState;
     protected boolean flightState;
+
+    protected final boolean canFly;
+    protected final boolean canSwim;
+    protected final boolean canWalk;
 
     private static final ResourceLocation BIG_BUTTON_OFF = Reference.rl("gui/mountable_command_button.png");
     private static final ResourceLocation BIG_BUTTON_ON = Reference.rl("gui/mountable_command_button_selected.png");
@@ -41,16 +46,20 @@ public class CommandChipScreen extends Screen {
     private final ArrowSelectionWidget TEXTURE_RIGHT = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
 
 
-    public CommandChipScreen(Component comp, UUID mountableID, String followMode, String freeMode, String groundMode, String waterMode, String flyingMode, boolean waterState, boolean flightState) {
+    public CommandChipScreen(Component comp, MountableInfo info) {
         super(comp);
-        this.trackedMountable = mountableID;
-        this.followMode = followMode;
-        this.NON_RIDER_MODE = freeMode;
-        this.GROUND_MODE = groundMode;
-        this.WATER_MODE = waterMode;
-        this.FLYING_MODE = flyingMode;
-        this.waterState = waterState;
-        this.flightState = flightState;
+        this.trackedMountable = info.uuid();
+        this.followMode = info.followMode();
+        this.NON_RIDER_MODE = info.freeMode();
+        this.GROUND_MODE = info.groundMode();
+        this.WATER_MODE = info.waterMode();
+        this.FLYING_MODE = info.flightMode();
+        this.waterState = info.waterState();
+        this.flightState = info.flightState();
+
+        this.canFly = info.canFly();
+        this.canWalk = info.canWalk();
+        this.canSwim = info.canSwim();
     }
 
 
@@ -65,7 +74,7 @@ public class CommandChipScreen extends Screen {
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         if (this.getTitle().getString().matches("commandchipscreen") && AI_WIDGET != null && AI_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
-            Minecraft.getInstance().setScreen(new MountableAIScreen(trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, waterState, flightState));
+            Minecraft.getInstance().setScreen(new MountableAIScreen(new MountableInfo(trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, waterState, flightState, canSwim, canWalk, canFly)));
         }
         return super.mouseClicked(pMouseX, pMouseY, pButton);
     }

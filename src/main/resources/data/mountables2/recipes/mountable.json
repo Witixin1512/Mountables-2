@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "mountables2:mountable",
+    "count": 1
+  },
+  "pattern": [
+    "AAA",
+    "AIA",
+    "AAA"
+  ],
+  "key": {
+    "I": {
+      "item": "mountables2:mountable_core"
+    },
+    "A": {
+      "item": "mountables2:mysterious_fragment"
+    }
+  }
+}

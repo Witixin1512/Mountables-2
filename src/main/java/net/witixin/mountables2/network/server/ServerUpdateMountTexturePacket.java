@@ -1,38 +1,36 @@
-package net.witixin.mountables2.network;
+package net.witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.entity.Mountable;
+import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ServerUpdateMountModelPacket{
-
+public class ServerUpdateMountTexturePacket extends DefaultPacket {
     private final UUID id;
     private final int position;
 
-    public ServerUpdateMountModelPacket(UUID id, Integer index){
+    public ServerUpdateMountTexturePacket(UUID id, Integer index){
         this.id = id;
         this.position = index;
     }
-
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeUUID(id);
         buf.writeInt(position);
     }
-    public static ServerUpdateMountModelPacket decode(FriendlyByteBuf buf){
-        return new ServerUpdateMountModelPacket(buf.readUUID(), buf.readInt());
+    public static ServerUpdateMountTexturePacket decode(FriendlyByteBuf buf){
+        return new ServerUpdateMountTexturePacket(buf.readUUID(), buf.readInt());
     }
-
-    public static void handle(ServerUpdateMountModelPacket packet, Supplier<NetworkEvent.Context> ctx){
+    public static void handle(ServerUpdateMountTexturePacket packet, Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(() ->
                 {
                     ServerLevel level = ctx.get().getSender().getLevel();
                     if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable){
-                        mountable.loadMountableData(mountable.getModelPosition() + packet.position);
+                        mountable.setEmissiveTexture(packet.position);
                     }
                 }
         );

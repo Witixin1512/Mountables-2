@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "mountables2:mountable_core",
+    "count": 1
+  },
+  "pattern": [
+    "ASA",
+    "SIS",
+    "ASA"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:tripwire_hook"
+    },
+    "A": {
+      "item": "minecraft:leather"
+    },
+    "S" : {
+      "item" : "minecraft:iron_ingot"
+    }
+  }
+}

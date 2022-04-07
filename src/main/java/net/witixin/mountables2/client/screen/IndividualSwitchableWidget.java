@@ -1,9 +1,8 @@
 package net.witixin.mountables2.client.screen;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.witixin.mountables2.network.PacketHandler;
-import net.witixin.mountables2.network.ServerUpdateMountFreePacket;
+import net.witixin.mountables2.network.server.ServerUpdateMountFreePacket;
 
 import java.util.UUID;
 

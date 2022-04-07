@@ -22,7 +22,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    mappings channel: 'parchment', version: '2021.12.19-1.18.1'
+    mappings channel: 'parchment', version: '2022.03.13-1.18.2'
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
     runs {
@@ -38,7 +38,7 @@ minecraft {
             }
         }
         server {
-            workingDirectory project.file('run')
+            workingDirectory project.file('run_server')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
@@ -50,7 +50,7 @@ minecraft {
         }
 
         data {
-            workingDirectory project.file('run')
+            workingDirectory project.file('run_data')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'mountables2', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
@@ -68,12 +68,25 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     //geckolib
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
 }
 
+
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.1-39.0.75'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.15'
     //geckolib
-    implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.11')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.12')
+    runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
 }
 
 jar {
