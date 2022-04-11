@@ -1,5 +1,6 @@
 {
   "type": "mountables2:fragment_modifier",
-  "conditions" : [
-  ]
+  "weight" : 5,
+  "locations" : ["chests/abandoned_mineshaft", "chests/bastion_bridge", "chests/bastion_hoglin_stable", "chests/bastion_other", "chests/bastion_treasure", "chests/end_city_treasure", "chests/nether_bridge"],
+  "conditions" : []
 }

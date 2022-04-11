@@ -1,6 +1,6 @@
 {
   "itemGroup.mountables2.ctab" : "Mountables 2",
-  "entity.mountables2.mountable" : "Mount",
+  "entity.mountables2.mountable_entity" : "Mount",
 
   "item.mountables2.mountable_core" : "Mountable Core",
   "item.mountables2.mysterious_fragment" : "Mysterious Fragment",

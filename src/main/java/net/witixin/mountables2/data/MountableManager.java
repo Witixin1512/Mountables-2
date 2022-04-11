@@ -12,6 +12,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -29,6 +30,9 @@ public class MountableManager extends SimpleJsonResourceReloadListener implement
     public List<MountableData> get() {
         return mountable_list;
     }
+
+    //TODO POLISH AND ADD THINGS!
+    //Create ResourceLoader and set it up with folders, readme, and shit.
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
@@ -55,7 +59,13 @@ public class MountableManager extends SimpleJsonResourceReloadListener implement
                 boolean b1 = GsonHelper.getAsBoolean(obj, "canSwim");
                 boolean b2 = GsonHelper.getAsBoolean(obj, "canWalk");
 
-                mountable_list.add(new MountableData(s.toLowerCase(), d1, d0, new Double[]{posX, posY, posZ}, list, new Boolean[]{b1, b2, b3}));
+                String displayName = GsonHelper.getAsString(obj, "display_name");
+
+                JsonObject secondObject = GsonHelper.getAsJsonObject(obj, "attributes");
+                Map<String, Double> attributeMap = new HashMap<>();
+                secondObject.entrySet().forEach(entry -> attributeMap.put(entry.getKey(), entry.getValue().getAsDouble()));
+
+                mountable_list.add(new MountableData(s.toLowerCase(), d1, d0, new Double[]{posX, posY, posZ}, list, new Boolean[]{b1, b2, b3}, displayName, attributeMap));
                 LogManager.getLogger("mountables2").info("Registered a new mountable under the name: " + s);
             }
             catch (Exception e ) {

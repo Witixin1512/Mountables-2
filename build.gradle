@@ -28,9 +28,11 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+            properties 'mixin.env.remapRefMap': 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-
+            args '--username', 'Dev####'
             mods {
                 mountables2 {
                     source sourceSets.main
@@ -39,6 +41,8 @@ minecraft {
         }
         server {
             workingDirectory project.file('run_server')
+            properties 'mixin.env.remapRefMap': 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
@@ -51,6 +55,8 @@ minecraft {
 
         data {
             workingDirectory project.file('run_data')
+            properties 'mixin.env.remapRefMap': 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'mountables2', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
@@ -79,14 +85,23 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.dev"
     }
+    repositories {
+        maven {
+            url "https://cursemaven.com"
+            content {
+                includeGroup "curse.maven"
+            }
+        }
+    }
 }
 
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.0.15'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.45'
     //geckolib
     implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.12')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
+    runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
 }
 
 jar {

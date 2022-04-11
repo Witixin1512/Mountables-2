@@ -1,20 +1,20 @@
 package net.witixin.mountables2.entity;
 
-import com.mojang.math.Vector3d;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +42,7 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Mountable extends TamableAnimal implements IAnimatable, PlayerRideableJumping {
@@ -56,6 +57,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public float targetSquish = 1;
     public float squish = 1;
     public float oSquish;
+
+
     boolean wasOnGround = true;
 
     //Horse
@@ -128,6 +131,12 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         super.die(pCause);
         this.dropMountableItem();
     }
+
+    public boolean causeFallDamage(float pFallDistance, float pMultiplier, DamageSource pSource) {
+        return false;
+    }
+
+
     @Override
     public void tick(){
         super.tick();
@@ -176,6 +185,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.wasOnGround = this.onGround;
         this.targetSquish *= 0.6F;
     }
+
+    //TODO Override sounds.
+
 
     public void travel(Vec3 travelVec) {
         if (this.isAlive()) {
@@ -444,6 +456,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public boolean isWalking(){
         return this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name()) || this.getGroundMode().matches(GROUND_MOVEMENT.WALK.name());
     }
+    public boolean can3dMove(){
+        return false;
+    }
 
 
     protected void doPlayerRide(Player pPlayer) {
@@ -579,7 +594,10 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public void loadMountableData(MountableData data){
         this.setUniqueName(data.uniqueName());
+        this.setCustomNameVisible(true);
+        this.setCustomName(new TextComponent(data.displayName()));
         this.mountableData = data;
+        this.processAttributes(data.attributeMap());
     }
 
     public void loadMountableData(int index){
@@ -671,6 +689,20 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             this.playerJumpPendingScale = 1.0F;
         } else {
             this.playerJumpPendingScale = 0.4F + 0.4F * (float)pJumpPower / 90.0F;
+        }
+    }
+
+    private void processAttributes(Map<String, Double> attributeMap){
+        if (this.getAttributes() == null) return;
+        Class<Attributes> attriClass = Attributes.class;
+        final Attribute toCompare = Attributes.ATTACK_DAMAGE;
+        for (Map.Entry<String, Double> entry : attributeMap.entrySet()){
+            try {
+                Attribute attribute = (Attribute) attriClass.getDeclaredField(entry.getKey()).get(toCompare);
+                this.getAttribute(attribute).setBaseValue(entry.getValue());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
