@@ -43,6 +43,8 @@ import net.witixin.mountables2.network.PacketHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -103,6 +105,8 @@ public class Reference {
     private static final DeferredRegister<GlobalLootModifierSerializer<?>> GLM_REG = DeferredRegister.create(ForgeRegistries.Keys.LOOT_MODIFIER_SERIALIZERS, MODID);
     private static final RegistryObject<ChestLootModifier.ChestLootModifierSerializer> GLM = GLM_REG.register("fragment_modifier", ChestLootModifier.ChestLootModifierSerializer::new);
 
+    public static final Map<String, String> SRG_ATTRIBUTES_MAP = new HashMap<>();
+
     public Reference() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.GENERAL_SPEC, "mountables2.toml");
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::attributeCreation);
@@ -114,6 +118,11 @@ public class Reference {
         MinecraftForge.EVENT_BUS.addListener(this::resizeEntity);
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
         PacketHandler.init();
+        SRG_ATTRIBUTES_MAP.put("MAX_HEALTH", "f_22276_");
+        SRG_ATTRIBUTES_MAP.put("FOLLOW_RANGE", "f_22277_");
+        SRG_ATTRIBUTES_MAP.put("MOVEMENT_SPEED", "f_22279_");
+        SRG_ATTRIBUTES_MAP.put("FLYING_SPEED", "f_22279_");
+        SRG_ATTRIBUTES_MAP.put("JUMP_STRENGTH", "f_22288_");
     }
 
     public static ResourceLocation rl(String s) {
@@ -133,7 +142,7 @@ public class Reference {
                 FileUtils.setupResourceAndDataPacks();
             }
         });
-        //MOUNTABLE_MANAGER is a
+        //MOUNTABLE_MANAGER is a SimpleJSONReloadListener
         event.addListener(MOUNTABLE_MANAGER);
     }
 

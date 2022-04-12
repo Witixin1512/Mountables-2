@@ -38,7 +38,7 @@ public class ResourcePackInfo {
     public void createResourcePackIfNotExists() {
         final File root = usedModLoader.resourcePackDirectory;
         createDirectoryIfNotExists(root);
-        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root, "Mountables2 resources");
+        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root.getParentFile().getParentFile(), "Mountables2 Resources");
         packMcmeta.writeIfNotExists();
         createDirectoryIfNotExists(new File(root, "geo"));
         createDirectoryIfNotExists(new File(root, "animations"));
@@ -48,7 +48,7 @@ public class ResourcePackInfo {
     public void createDataPackIfNotExists() {
         final File root = usedModLoader.datapackDirectory;
         createDirectoryIfNotExists(root);
-        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root, "Mountables Data");
+        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root.getParentFile().getParentFile(), "Mountables Data");
         packMcmeta.writeIfNotExists();
         File mountablesFolder = new File(root, "custom_mountables");
         createDirectoryIfNotExists(mountablesFolder);

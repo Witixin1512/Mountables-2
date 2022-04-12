@@ -8,9 +8,13 @@ public enum KnownResourceLoaderMod {
      * This code was taken from the ContentTweaker mod.
      */
 
-    THE_LOADER("theloader", "the_loader/resourcepacks/", "the_loader/datapacks/", "mountables2"),
-    OPEN_LOADER("openloader", "openloader/resources/", "openloader/data/", "mountables2"),
-    GLOBAL_DATA_AND_RESOURCE_PACKS("globaldataandresourcepacks", "global_resource_packs/", "global_data_packs/", "mountables2");
+    //Currently not in 1.18
+    //THE_LOADER("theloader", "the_loader/resourcepacks/", "the_loader/datapacks/", "mountables2"),
+
+    //Seems broken in 1.18, doesn't reload on /reload)
+    //OPEN_LOADER("openloader", "config/openloader/resources/", "config/openloader/data/", "mountables2");
+    //Currently only supports zips ?
+    GLOBAL_DATA_AND_RESOURCE_PACKS("globaldataandresourcepacks", "global_packs/required_resources/mountable_resourcepack/assets/", "global_packs/required_data/mountable_datapack/data/", "mountables2");
 
     final String modid;
     final File resourcePackDirectory;

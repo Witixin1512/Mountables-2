@@ -14,7 +14,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-version = '1.0.1'
+def mc_version = '1.18.2'
+version = mc_version + '-1.0.1'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -99,9 +100,11 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.0.45'
     //geckolib
-    implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.12')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.13')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
     runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
+    //runtimeOnly fg.deobf("curse.maven:open-loader-354339:3697234")
+    //runtimeOnly fg.deobf("curse.maven:bookshelf-228525:3732237")
 }
 
 jar {

@@ -2,6 +2,7 @@ package net.witixin.mountables2.data.files;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
 
 public class FileUtils {

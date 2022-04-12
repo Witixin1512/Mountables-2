@@ -15,16 +15,16 @@ public class PackMCMetaTemplate {
      * This code was taken from the ContentTweaker mod.
      */
 
-    //We're in 1.18, so format is now 8
-    private static final int format = 8;
+    //We're in 1.18.2, so format is now 9
+    private static final int format = 9;
 
     private final TemplateFile template;
     private final File mcmetaFile;
 
     public PackMCMetaTemplate(File containingDirectory, String description) {
         this.template = TemplateFile.of(ResourceType.DATA, new ResourceLocation(Reference.MODID, "pack.mcmeta"));
-        template.setValue("PACK_FORMAT", String.valueOf(format));
         template.setValue("PACK_DESCRIPTION", description);
+        template.setValue("PACK_FORMAT", String.valueOf(format));
         this.mcmetaFile = new File(containingDirectory, "pack.mcmeta");
     }
 

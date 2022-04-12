@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
 import net.witixin.mountables2.Reference;
 import net.witixin.mountables2.data.MountableData;
@@ -514,6 +515,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 if (mountable.onGround) event.getController().setAnimation(new AnimationBuilder().addAnimation("walk", true));
                 if (!mountable.onGround && this.entityData.get(IS_FLYING)) event.getController().setAnimation(new AnimationBuilder().addAnimation("fly", true));
                     return PlayState.CONTINUE;
+                    //TODO JUMP AND LAND
             }
             else {
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("idle", true));
@@ -695,10 +697,10 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     private void processAttributes(Map<String, Double> attributeMap){
         if (this.getAttributes() == null) return;
         Class<Attributes> attriClass = Attributes.class;
-        final Attribute toCompare = Attributes.ATTACK_DAMAGE;
         for (Map.Entry<String, Double> entry : attributeMap.entrySet()){
             try {
-                Attribute attribute = (Attribute) attriClass.getDeclaredField(entry.getKey()).get(toCompare);
+                String toCompare = FMLEnvironment.production ? Reference.SRG_ATTRIBUTES_MAP.get(entry.getKey()) : entry.getKey();
+                Attribute attribute = (Attribute) attriClass.getField(toCompare).get(null);
                 this.getAttribute(attribute).setBaseValue(entry.getValue());
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();

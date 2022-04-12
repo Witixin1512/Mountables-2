@@ -60,11 +60,9 @@ public class MountableManager extends SimpleJsonResourceReloadListener implement
                 boolean b2 = GsonHelper.getAsBoolean(obj, "canWalk");
 
                 String displayName = GsonHelper.getAsString(obj, "display_name");
-
                 JsonObject secondObject = GsonHelper.getAsJsonObject(obj, "attributes");
                 Map<String, Double> attributeMap = new HashMap<>();
                 secondObject.entrySet().forEach(entry -> attributeMap.put(entry.getKey(), entry.getValue().getAsDouble()));
-
                 mountable_list.add(new MountableData(s.toLowerCase(), d1, d0, new Double[]{posX, posY, posZ}, list, new Boolean[]{b1, b2, b3}, displayName, attributeMap));
                 LogManager.getLogger("mountables2").info("Registered a new mountable under the name: " + s);
             }
