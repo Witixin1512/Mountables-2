@@ -28,6 +28,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -105,6 +106,9 @@ public class Reference {
     private static final DeferredRegister<GlobalLootModifierSerializer<?>> GLM_REG = DeferredRegister.create(ForgeRegistries.Keys.LOOT_MODIFIER_SERIALIZERS, MODID);
     private static final RegistryObject<ChestLootModifier.ChestLootModifierSerializer> GLM = GLM_REG.register("fragment_modifier", ChestLootModifier.ChestLootModifierSerializer::new);
 
+    private static final DeferredRegister<SoundEvent> SOUND_REGISTER = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
+    public static final RegistryObject<SoundEvent> EMPTY_SOUND_EVENT = SOUND_REGISTER.register("empty", () -> new SoundEvent(rl("empty")));
+
     public static final Map<String, String> SRG_ATTRIBUTES_MAP = new HashMap<>();
 
     public Reference() {
@@ -114,6 +118,7 @@ public class Reference {
         ENTITY_REGISTER.register(bus);
         ITEM_REGISTER.register(bus);
         GLM_REG.register(bus);
+        SOUND_REGISTER.register(bus);
         MinecraftForge.EVENT_BUS.addListener(this::onDataPackLoad);
         MinecraftForge.EVENT_BUS.addListener(this::resizeEntity);
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
@@ -123,6 +128,7 @@ public class Reference {
         SRG_ATTRIBUTES_MAP.put("MOVEMENT_SPEED", "f_22279_");
         SRG_ATTRIBUTES_MAP.put("FLYING_SPEED", "f_22279_");
         SRG_ATTRIBUTES_MAP.put("JUMP_STRENGTH", "f_22288_");
+
     }
 
     public static ResourceLocation rl(String s) {

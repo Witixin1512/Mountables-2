@@ -1,5 +1,6 @@
 package net.witixin.mountables2.entity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -8,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,7 +35,6 @@ import net.witixin.mountables2.entity.goal.MountableFollowGoal;
 import net.witixin.mountables2.entity.goal.MountableWanderGoal;
 import net.witixin.mountables2.network.client.ClientOpenScreenPacket;
 import net.witixin.mountables2.network.PacketHandler;
-import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -42,6 +43,7 @@ import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -93,6 +95,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public static final EntityDataAccessor<Boolean> CAN_FREE_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
 
 
+
     private AnimationFactory factory = new AnimationFactory(this);
     private MountableData mountableData;
 
@@ -131,7 +134,41 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public void die(DamageSource pCause) {
         super.die(pCause);
         this.dropMountableItem();
+
     }
+
+
+
+    @javax.annotation.Nullable
+    protected SoundEvent getAmbientSound() {
+        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".idle"));
+    }
+    @Nullable
+    protected SoundEvent getHurtSound(DamageSource source){
+        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".hurt"));
+
+    }
+    @Nullable
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState blockState){
+        this.playSound(new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".walk")), 0.8f, 0.15f);
+    }
+
+    @Override
+    protected SoundEvent getSwimSound(){
+        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME)+ ".swim"));
+    }
+
+    @Override
+    protected SoundEvent getSwimSplashSound(){
+        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".splash"));
+    }
+
+    @Override
+    protected SoundEvent getDeathSound(){
+        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".death"));
+    }
+
 
     public boolean causeFallDamage(float pFallDistance, float pMultiplier, DamageSource pSource) {
         return false;
