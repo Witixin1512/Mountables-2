@@ -22,6 +22,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
@@ -51,7 +53,7 @@ import java.util.stream.Collectors;
 public class Mountable extends TamableAnimal implements IAnimatable, PlayerRideableJumping {
 
     public static final String DEFAULT_NAME = "companion_block";
-
+    private static final double VERTICAL_SPEED_COEFICIENT = Math.cos(Math.toRadians(87));
     /*
     Credit to the Movement goes to LukeGrahamLaundry, maker of the Original Mountables Mod.
      */
@@ -134,7 +136,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public void die(DamageSource pCause) {
         super.die(pCause);
         this.dropMountableItem();
-
     }
 
 
@@ -229,65 +230,67 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public void travel(Vec3 travelVec) {
         if (this.isAlive()) {
-            if (this.isVehicle() && (this.canFreeFly() || this.canBeRiddenInWater(null)) && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())){
-                LivingEntity rider = (LivingEntity) this.getPassengers().get(0);
-
-                if (this.canBeRiddenInWater(rider) && this.isInWaterOrBubble()){
+            //Flight or water controls; Water doesn't work yet
+            if (this.isVehicle() && canMove3D()){
+                    LivingEntity rider = (LivingEntity) this.getPassengers().get(0);
+                if ((this.isInWaterOrBubble() && this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name())) || !this.isInWaterOrBubble() && this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())){
                     this.entityData.set(IS_FLYING, true);
-                }
-                if (this.canBeRiddenInWater(rider) && !this.isInWaterOrBubble() && this.isFlying && !this.canFreeFly()){
-                    this.entityData.set(IS_FLYING, false);
-                }
-                this.setOnGround(!isFlying);
-
-                if (isFlying) {
-                    this.setNoGravity(true);
-
-                    this.setYRot(rider.getYRot());
-                    this.yRotO = rider.getYRot();
-
-                    double yComponent = 0;
-                    double moveForward = 0;
-
-                    BlockState downState = this.level.getBlockState(this.blockPosition().below(2));
-                    boolean downSolid = !(downState.isAir() || (this.canBeRiddenInWater(null) && downState.is(Blocks.WATER)));  // !isAir should be isSolid
-
-                    if (rider.zza > 0) {
-                        moveForward = this.getFlyingSpeed();
-                        this.setXRot( -Mth.clamp(rider.getXRot(), -10, 10));
-                        this.setRot(this.getYRot(), this.getXRot());
-                        if (rider.getXRot() < -10 || rider.getXRot() > 10) {
-                            yComponent = -(Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
-                            if (!isFlying && yComponent > 0) this.entityData.set(IS_FLYING, true);
-                            else if (isFlying && yComponent < 0 && downSolid)
-                                this.entityData.set(IS_FLYING, false);
-                        }
-                    } else if (rider.zza < 0) {
-                        moveForward = -this.getFlyingSpeed();
-                        this.setXRot(-Mth.clamp(rider.getXRot(), -10, 10));
-                        this.setRot(this.getYRot(), this.getXRot());
-                        if (rider.getXRot() < -10 || rider.getXRot() > 10) {
-                            yComponent = (Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
-                            if (!isFlying && yComponent > 0) this.entityData.set(IS_FLYING, true);
-                            else if (isFlying && yComponent < 0 && downSolid)
-                                this.entityData.set(IS_FLYING, false);
-                        }
                     }
-
-                    if (this.isControlledByLocalInstance()){
-                        this.flyingSpeed = (float) this.getFlyingSpeed();
-                        // this.setSpeed((float) this.getFlyingSpeed());
-                        super.travel(new Vec3(rider.xxa * this.getFlyingSpeed() * 0.5F, yComponent, moveForward));
-                    } else if (rider instanceof Player) {
-                        this.setDeltaMovement(Vec3.ZERO);
+                    if (this.entityData.get(IS_FLYING) && (this.isInWaterOrBubble() && !this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name()) || (!this.isInWaterOrBubble() && !this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())))){
+                        this.entityData.set(IS_FLYING, false);
                     }
-                    return;
-                } else {
-                    this.setNoGravity(false);
-                }
+                    this.setOnGround(!isFlying);
+                    if (this.entityData.get(IS_FLYING)) {
+                        System.out.println("flight");
+                        this.setNoGravity(true);
+
+                        this.setYRot(rider.getYRot());
+                        this.yRotO = rider.getYRot();
+
+                        double yComponent = 0;
+                        double moveForward = 0;
+
+                        BlockState downState = this.level.getBlockState(this.blockPosition().below(2));
+                        boolean downSolid = !(downState.isAir() || (this.canBeRiddenInWater(null) && downState.is(Blocks.WATER)));  // !isAir should be isSolid
+
+                        if (rider.zza > 0) {
+                            moveForward = this.getFlyingSpeed();
+                            this.setXRot( -Mth.clamp(rider.getXRot(), -10, 10));
+                            this.setRot(this.getYRot(), this.getXRot());
+                            if (rider.getXRot() < -10 || rider.getXRot() > 10) {
+                                yComponent = -(Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
+                                if (!this.entityData.get(IS_FLYING) && yComponent > 0) this.entityData.set(IS_FLYING, true);
+                                else if (this.entityData.get(IS_FLYING) && yComponent < 0 && downSolid)
+                                    this.entityData.set(IS_FLYING, false);
+                            }
+                        } else if (rider.zza < 0) {
+                            moveForward = -this.getFlyingSpeed();
+                            this.setXRot(-Mth.clamp(rider.getXRot(), -10, 10));
+                            this.setRot(this.getYRot(), this.getXRot());
+                            if (rider.getXRot() < -10 || rider.getXRot() > 10) {
+                                yComponent = (Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
+                                if (!this.entityData.get(IS_FLYING) && yComponent > 0) this.entityData.set(IS_FLYING, true);
+                                else if (this.entityData.get(IS_FLYING) && yComponent < 0 && downSolid)
+                                    this.entityData.set(IS_FLYING, false);
+                            }
+                        }
+
+                        if (this.isControlledByLocalInstance()){
+                            this.flyingSpeed = (float) this.getFlyingSpeed();
+                            this.setSpeed(this.getFlyingSpeed());
+                            super.travel(new Vec3(rider.xxa * this.getFlyingSpeed(), VERTICAL_SPEED_COEFICIENT * rider.getLookAngle().y, moveForward));
+                        } else if (rider instanceof Player) {
+                            this.setDeltaMovement(Vec3.ZERO);
+                        }
+                        return;
+                    } else {
+                        this.setNoGravity(false);
+                    }
             }
 
             if (this.isVehicle() && this.canBeControlledByRider()) {
+                //All modes I think
+                System.out.println("Doesn't care if player input exists");
                 LivingEntity livingentity = (LivingEntity)this.getControllingPassenger();
                 this.setYRot(livingentity.getYRot());
                 this.yRotO = this.getYRot();
@@ -307,10 +310,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                     f1 = 0.0F;
                 }
 
-                boolean allowJump = (this.onGround && !this.isJumping()) || (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && canFreeFly()) ;
+                boolean allowJump = (this.onGround && !this.isJumping());
                 if ((this.playerJumpPendingScale > 0.0F && allowJump)) {
                     this.justAirJumped = true;
-
                     double d0 = 0.65D * (double)this.playerJumpPendingScale * (double)this.getBlockJumpFactor();
                     double d1;
                     if (this.hasEffect(MobEffects.JUMP)) {
@@ -319,26 +321,25 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                         d1 = d0;
                     }
                     if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 *= 1.75;
-                    if (this.canFreeFly() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 = 0.5;
+                    if (this.canMove3D() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 = 0.5;
 
                     Vec3 vector3d = this.getDeltaMovement();
                     this.setDeltaMovement(vector3d.x, d1, vector3d.z);
                     this.setIsJumping(true);
                     this.hasImpulse = true;
                     ForgeHooks.onLivingJump(this);
-                    if (f1 > 0.0F) {
+                    if (f1 > 0.0F && this.getDeltaMovement().y <= 0.5) {
                         float f2 = Mth.sin(this.getYRot() * ((float)Math.PI / 180F));
                         float f3 = Mth.cos(this.getYRot() * ((float)Math.PI / 180F));
-                        float force = this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && canFreeFly() ? 2 : 1;
-                        this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * f2 * this.playerJumpPendingScale * force), 0.0D, (double)(0.4F * f3 * this.playerJumpPendingScale * force)));
+                        float force = this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && canMove3D() ? 2 : 1;
+                        super.travel(this.getDeltaMovement().add((double)(-0.4F * f2 * this.playerJumpPendingScale * force), 0.0D, (double)(0.4F * f3 * this.playerJumpPendingScale * force)));
                     }
 
                     this.playerJumpPendingScale = 0.0F;
-                    if (canFreeFly()) this.entityData.set(IS_FLYING, true);
                 } else if (this.onGround && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && (f != 0 || f1 != 0)){
                     if (hopTimer >= 3){
-                        doSlimeJump((float) f1, 1, 1);
                         hopTimer = 0;
+                        super.travel(doSlimeJump((float) f1, 1, 1));
                     }
                     hopTimer++;
                 }
@@ -347,6 +348,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 if (this.isControlledByLocalInstance()) {
                     float speed = this.isSlowOnLand() ? 0.05F : this.getFlyingSpeed();
                     this.setSpeed(speed);
+                    System.out.println("are we moving");
                     super.travel(new Vec3((double)f, travelVec.y, (double)f1));
                 } else if (livingentity instanceof Player) {
                     this.setDeltaMovement(Vec3.ZERO);
@@ -362,6 +364,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 // flight logic
                 if (livingentity.getXRot() < -25 && livingentity.zza > 0) this.entityData.set(IS_FLYING, true);
             } else {
+                System.out.println("AI");
+                //AI MODE!
                 float speed = this.isSlowOnLand() ? 0.05F : this.getFlyingSpeed();
                 this.setSpeed(speed);
                 this.flyingSpeed = 0.02F;
@@ -382,6 +386,10 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     private boolean isSlowOnLand(){
         return this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name()) || this.getWaterMode().matches(WATER_MOVEMENT.SWIM.name());
     }
+    protected boolean isAffectedByFluids() {
+        boolean bool = entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name());
+        return !bool;
+    }
 
     @Override
     protected void defineSynchedData(){
@@ -401,21 +409,21 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     private float getFlyingSpeed(){
-        return Math.max(0.25F, 0.025F);
+        return 0.55f;
     }
 
-    private void doSlimeJump(float f1, double yScale, double force) {
+    private Vec3 doSlimeJump(float f1, double yScale, double force) {
         double d1 = 0.8D * yScale;
         Vec3 vector3d = this.getDeltaMovement();
         this.setDeltaMovement(vector3d.x, d1, vector3d.z);
         this.setIsJumping(true);
         this.hasImpulse = true;
-        if (f1 > 0.0F) {
+        if (f1 > 0.0F && vector3d.y <= 0.3) {
             float f2 = Mth.sin(this.getYRot() * ((float)Math.PI / 180F));
             float f3 = Mth.cos(this.getYRot() * ((float)Math.PI / 180F));
-            this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * f2 * force), 0.0D, (double)(0.4F * f3 * force)));
+            return (this.getDeltaMovement().add((double)(-0.4F * f2 * force), 0.0D, (double)(0.4F * f3 * force)));
         }
-
+        return new Vec3(0.0, 0.0, 0.0);
     }
 
 
@@ -432,6 +440,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.setFlightMode(tag.getString("flight_mode"));
         this.setFreeFly(tag.getBoolean("free_flight"));
         this.setFreeSwim(tag.getBoolean("free_swim"));
+        this.entityData.set(IS_FLYING, tag.getBoolean("flying"));
     }
 
 
@@ -448,6 +457,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         tag.putString("flight_mode", this.getFlightMode());
         tag.putBoolean("free_flight", this.canFreeFly());
         tag.putBoolean("free_swim", this.canFreeSwim());
+        tag.putBoolean("flying", this.entityData.get(IS_FLYING));
     }
 
 
@@ -494,10 +504,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public boolean isWalking(){
         return this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name()) || this.getGroundMode().matches(GROUND_MOVEMENT.WALK.name());
     }
-    public boolean can3dMove(){
-        return false;
-    }
-
 
     protected void doPlayerRide(Player pPlayer) {
         if (!this.level.isClientSide) {
@@ -530,7 +536,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public void dropMountableItem(){
         ItemStack mountable_item = new ItemStack(Reference.MOUNTABLE.get());
-        mountable_item.getOrCreateTag().putString("MOUNTABLE", this.getUniqueResourceLocation().getPath());
+        mountable_item.getOrCreateTag().putString("MOUNTABLE", this.entityData.get(UNIQUE_NAME));
         mountable_item.getTag().putString("FOLLOW_MODE", this.getFollowMode());
         mountable_item.getTag().putUUID("OWNER", this.getOwnerUUID());
         mountable_item.getTag().putInt("MODEL_POS", this.getModelPosition());
@@ -577,7 +583,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         return factory;
     }
 
-
+    public boolean canMove3D(){
+        return this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name()) || this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name());
+    }
 
     public ResourceLocation getUniqueResourceLocation(){
         if (this.entityData.get(UNIQUE_NAME) == null ) throw new RuntimeException("Unique Name cannot be null!");
@@ -624,7 +632,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
 
     public void setModelPosition(int index){
-        if (index == -1) index = 0;
+        if (index < 0) index = Reference.MOUNTABLE_MANAGER.get().size() - 1;
+        if (index >= Reference.MOUNTABLE_MANAGER.get().size()) index = 0;
         this.entityData.set(MODEL_POSITION, index);
     }
     public int getModelPosition(){

@@ -21,9 +21,10 @@ public class MountableItem extends Item {
             mountable.setTame(true);
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
             if (!pContext.getItemInHand().getOrCreateTag().contains("MOUNTABLE")){
+                //This means the NBT Tag is empty!
                 mountable.loadDefault(Mountable.DEFAULT_NAME);
             }
-            if (stack.getOrCreateTag().contains("FOLLOW_MODE")){
+            else {
                 mountable.setFollowMode(stack.getTag().getString("FOLLOW_MODE"));
                 mountable.setModelPosition(stack.getTag().getInt("MODEL_POS"));
                 mountable.setAbsoluteEmissive(stack.getTag().getInt("TEX_POS"));
@@ -31,9 +32,10 @@ public class MountableItem extends Item {
                 mountable.setFreeMode(stack.getTag().getString("FREE_MODE"));
                 mountable.setWaterMode(stack.getTag().getString("WATER_MODE"));
                 mountable.setGroundMode(stack.getTag().getString("GROUND_MODE"));
-            }
-            if (stack.getTag().contains("dead")){
-                mountable.setHealth(1.0f);
+                if (stack.getTag().contains("dead")){
+                    mountable.setHealth(1.0f);
+                }
+                mountable.loadMountableData(Reference.findData(stack.getTag().getString("MOUNTABLE")));
             }
             pContext.getLevel().addFreshEntity(mountable);
             pContext.getPlayer().getItemInHand(pContext.getHand()).shrink(1);

@@ -33,7 +33,10 @@ public class ServerUpdateMountModelPacket extends DefaultPacket {
                 {
                     ServerLevel level = ctx.get().getSender().getLevel();
                     if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable){
-                        mountable.loadMountableData(mountable.getModelPosition() + packet.position);
+                        final int sum = mountable.getModelPosition() + packet.position;
+                        mountable.loadMountableData(sum);
+                        mountable.setModelPosition(sum);
+                        mountable.setEmissiveTexture(0);
                     }
                 }
         );
