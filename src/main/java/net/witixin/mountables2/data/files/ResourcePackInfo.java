@@ -3,6 +3,7 @@ package net.witixin.mountables2.data.files;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
 import net.witixin.mountables2.Reference;
+import org.spongepowered.asm.mixin.Pseudo;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -53,11 +54,11 @@ public class ResourcePackInfo {
     public void createDataPackIfNotExists() {
         final File root = usedModLoader.datapackDirectory;
         createDirectoryIfNotExists(root);
-        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root.getParentFile().getParentFile(), "Mountables Data");
+        final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root.getParentFile().getParentFile(), "Mountables2 Data");
         packMcmeta.writeIfNotExists();
         File mountablesFolder = new File(root, "custom_mountables");
         createDirectoryIfNotExists(mountablesFolder);
-        writeIfNotExists(new File(mountablesFolder, "companion_block.json"), ResourceType.DATA, Reference.rl("custom_mountables/companion_block"));
+        writeIfNotExists(new File(mountablesFolder, "companion_block.json"), ResourceType.DATA, Reference.rl("companion_block"));
     }
 
     private void createDirectoryIfNotExists(File directory) {
@@ -84,13 +85,11 @@ public class ResourcePackInfo {
         if (toCheck.exists())return;
         try(final PrintWriter writer = new PrintWriter(new FileWriter(toCheck))) {
             String content = "{\n";
-            content = content.concat("    \"empty\": {\n" +"        \"sounds\" : [\"mountables2:empty\"]\n" +"    }, \n");
+            content = content.concat("    \"empty\": {\n" +"        \"sounds\" : [\"mountables2:empty\"]\n" +"    }");
             for (int i = 0; i < contentStrings.size(); i++){
+                content = content.concat(",\n");
                 String toAdjoin = contentStrings.get(i);
                 content = content.concat("   " + toAdjoin);
-                if (!(i == contentStrings.size() -1)){
-                    content = content.concat(",\n");
-                }
             }
             content = content.concat("   \n}");
             writer.println(content);
@@ -111,6 +110,7 @@ public class ResourcePackInfo {
         if(!f.exists()) {
             try(final PrintWriter writer = new PrintWriter(new FileWriter(f))) {
                 String toWrite = TemplateFile.read(type, toRead);
+                if (toWrite == null || toWrite.isBlank()) throw new RuntimeException("Something went wrong with mountables2");
                 writer.println(toWrite);
             } catch(IOException ignored) {
             }

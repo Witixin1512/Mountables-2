@@ -4,12 +4,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.entity.Mountable;
-import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ServerUpdateMountModelPacket extends DefaultPacket {
+public class ServerUpdateMountModelPacket  {
 
     private final UUID id;
     private final int position;
@@ -35,6 +34,7 @@ public class ServerUpdateMountModelPacket extends DefaultPacket {
                     if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable){
                         final int sum = mountable.getModelPosition() + packet.position;
                         mountable.loadMountableData(sum);
+                        mountable.resetDefaultDataParameters();
                         mountable.setModelPosition(sum);
                         mountable.setEmissiveTexture(0);
                     }

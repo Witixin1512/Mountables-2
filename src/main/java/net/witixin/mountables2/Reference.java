@@ -1,5 +1,6 @@
 package net.witixin.mountables2;
 
+import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -14,22 +15,16 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
-import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -43,7 +38,6 @@ import net.witixin.mountables2.item.MountableItem;
 import net.witixin.mountables2.network.PacketHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -109,10 +103,17 @@ public class Reference {
     private static final DeferredRegister<SoundEvent> SOUND_REGISTER = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
     public static final RegistryObject<SoundEvent> EMPTY_SOUND_EVENT = SOUND_REGISTER.register("empty", () -> new SoundEvent(rl("empty")));
 
-    public static final Map<String, String> SRG_ATTRIBUTES_MAP = new HashMap<>();
+    public static final Map<String, String> SRG_ATTRIBUTES_MAP = Util.make( () -> {
+       Map<String, String> srgMap = new HashMap<>();
+        srgMap.put("MAX_HEALTH", "f_22276_");
+        srgMap.put("FOLLOW_RANGE", "f_22277_");
+        srgMap.put("MOVEMENT_SPEED", "f_22279_");
+        srgMap.put("FLYING_SPEED", "f_22279_");
+        srgMap.put("JUMP_STRENGTH", "f_22288_");
+       return srgMap;
+    });
 
     public Reference() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.GENERAL_SPEC, "mountables2.toml");
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::attributeCreation);
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ENTITY_REGISTER.register(bus);
@@ -120,14 +121,10 @@ public class Reference {
         GLM_REG.register(bus);
         SOUND_REGISTER.register(bus);
         MinecraftForge.EVENT_BUS.addListener(this::onDataPackLoad);
+        bus.addListener(this::addResourcePackListener);
         MinecraftForge.EVENT_BUS.addListener(this::resizeEntity);
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
         PacketHandler.init();
-        SRG_ATTRIBUTES_MAP.put("MAX_HEALTH", "f_22276_");
-        SRG_ATTRIBUTES_MAP.put("FOLLOW_RANGE", "f_22277_");
-        SRG_ATTRIBUTES_MAP.put("MOVEMENT_SPEED", "f_22279_");
-        SRG_ATTRIBUTES_MAP.put("FLYING_SPEED", "f_22279_");
-        SRG_ATTRIBUTES_MAP.put("JUMP_STRENGTH", "f_22288_");
 
     }
 
@@ -145,11 +142,24 @@ public class Reference {
 
             @Override
             protected void apply(Void pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
-                FileUtils.setupResourceAndDataPacks();
+                FileUtils.writeDataPack();
             }
         });
         //MOUNTABLE_MANAGER is a SimpleJSONReloadListener
         event.addListener(MOUNTABLE_MANAGER);
+    }
+    private void addResourcePackListener(RegisterClientReloadListenersEvent event){
+        event.registerReloadListener(new SimplePreparableReloadListener<Void>() {
+            @Override
+            protected Void prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+                return null;
+            }
+
+            @Override
+            protected void apply(Void pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+                FileUtils.writeResourcePack();
+            }
+        });
     }
 
     public static MountableData findData(String unique_name) {

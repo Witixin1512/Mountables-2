@@ -4,12 +4,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.entity.Mountable;
-import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ServerUpdateMountAIPacket extends DefaultPacket {
+public class ServerUpdateMountAIPacket  {
     private final UUID uuid;
     private final String AI;
     private final String TYPE;

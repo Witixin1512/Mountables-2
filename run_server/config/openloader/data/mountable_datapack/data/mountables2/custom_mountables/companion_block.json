@@ -1,0 +1,17 @@
+{
+  "unique_name" : "companion_block",
+  "display_name" : "Companion",
+  "hitbox" : [1.0, 1.0],
+  "riding_position" : [0.0, -0.1, 0.0],
+  "emissive_textures" : ["companion_block_emissive", "companion_block_translucent"],
+  "canSwim": true,
+  "canFly" : true,
+  "canWalk": true,
+  "attributes" : {
+      "MOVEMENT_SPEED" : 0.5,
+      "JUMP_STRENGTH" : 0.5,
+      "MAX_HEALTH" : 20,
+      "FLYING_SPEED" : 1,
+      "FOLLOW_RANGE" : 20
+    }
+}

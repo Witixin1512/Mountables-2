@@ -12,9 +12,8 @@ public enum KnownResourceLoaderMod {
     //THE_LOADER("theloader", "the_loader/resourcepacks/", "the_loader/datapacks/", "mountables2"),
 
     //Seems broken in 1.18, doesn't reload on /reload)
-    //OPEN_LOADER("openloader", "config/openloader/resources/", "config/openloader/data/", "mountables2");
-    //Currently only supports zips ?
-    GLOBAL_DATA_AND_RESOURCE_PACKS("globaldataandresourcepacks", "global_packs/required_resources/mountable_resourcepack/assets/", "global_packs/required_data/mountable_datapack/data/", "mountables2");
+    OPEN_LOADER("openloader", "config/openloader/resources/", "config/openloader/data/", "mountables2"),
+    GLOBAL_DATA_AND_RESOURCE_PACKS("globaldataandresourcepacks", "global_packs/required_resources/", "global_packs/required_data/", "mountables2");
 
     final String modid;
     final File resourcePackDirectory;
@@ -22,7 +21,7 @@ public enum KnownResourceLoaderMod {
 
     KnownResourceLoaderMod(String loadermodid, String resourcePackDirectory, String datapackDirectory, String customModid) {
         this.modid = loadermodid;
-        this.resourcePackDirectory = new File(resourcePackDirectory + customModid);
-        this.datapackDirectory = new File(datapackDirectory + customModid);
+        this.resourcePackDirectory = new File(resourcePackDirectory  + "mountable_resourcepack/assets/" + customModid);
+        this.datapackDirectory = new File(datapackDirectory   + "mountable_datapack/data/" + customModid);
     }
 }

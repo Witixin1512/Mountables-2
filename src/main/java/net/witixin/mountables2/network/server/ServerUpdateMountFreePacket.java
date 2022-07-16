@@ -4,12 +4,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.entity.Mountable;
-import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ServerUpdateMountFreePacket extends DefaultPacket {
+public class ServerUpdateMountFreePacket  {
     private final UUID uuid;
     private final boolean isWater;
     private final boolean toSet;

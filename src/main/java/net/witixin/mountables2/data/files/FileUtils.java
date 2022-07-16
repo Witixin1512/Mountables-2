@@ -10,13 +10,8 @@ public class FileUtils {
      * This code was taken from the ContentTweaker mod.
      */
 
-    public static void setupResourceAndDataPacks(){
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> FileUtils::writeResourcePack);
-        writeDataPack();
-    }
 
-
-    private static void writeResourcePack() {
+    public static void writeResourcePack() {
         final ResourcePackInfo resourcePackInfo = ResourcePackInfo.get();
         if (resourcePackInfo == null) {
             return;
@@ -24,7 +19,7 @@ public class FileUtils {
         resourcePackInfo.createResourcePackIfNotExists();
     }
 
-    private static void writeDataPack() {
+    public static void writeDataPack() {
         final ResourcePackInfo resourcePackInfo = ResourcePackInfo.get();
         if (resourcePackInfo == null) {
             return;

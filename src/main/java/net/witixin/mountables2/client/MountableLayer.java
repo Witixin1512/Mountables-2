@@ -23,12 +23,12 @@ public class MountableLayer extends GeoLayerRenderer<Mountable> {
     @Override
     public void render(PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, Mountable entityLivingBaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         //renderCopyModel(this.getEntityModel(), getEntityTexture(entityLivingBaseIn), matrixStackIn, bufferIn, packedLightIn, entityLivingBaseIn, partialTicks,  0f, 0f, 0);
-        RenderType renderType = RenderType.entityTranslucent(getEntityTexture(entityLivingBaseIn));
+        RenderType renderType = RenderType.entityTranslucentCull(getEntityTexture(entityLivingBaseIn));
         this.getRenderer().render(this.getEntityModel().getModel(getEntityModel().getModelLocation(entityLivingBaseIn)), entityLivingBaseIn, partialTicks, renderType, matrixStackIn, bufferIn, bufferIn.getBuffer(renderType), packedLightIn, OverlayTexture.NO_OVERLAY, 1f, 1f, 1f, 1f);
     }
 
     @Override
     public RenderType getRenderType(ResourceLocation textureLocation) {
-        return RenderType.entityTranslucent(textureLocation);
+        return RenderType.entityTranslucentCull(textureLocation);
     }
 }

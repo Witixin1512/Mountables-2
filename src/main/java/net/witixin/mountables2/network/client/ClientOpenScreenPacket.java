@@ -5,12 +5,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 import net.witixin.mountables2.data.MountableInfo;
-import net.witixin.mountables2.network.DefaultPacket;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ClientOpenScreenPacket extends DefaultPacket {
+public class ClientOpenScreenPacket {
 
     private final UUID id;
     private final String followMode;

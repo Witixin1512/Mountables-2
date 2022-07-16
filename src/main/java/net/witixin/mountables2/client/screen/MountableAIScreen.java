@@ -5,8 +5,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.witixin.mountables2.Reference;
+import net.witixin.mountables2.client.screen.widgets.IndividualSwitchableWidget;
+import net.witixin.mountables2.client.screen.widgets.LinkedSwitchableWidget;
+import net.witixin.mountables2.client.screen.widgets.SwitchableWidget;
 import net.witixin.mountables2.data.MountableInfo;
 import net.witixin.mountables2.entity.Mountable;
+import net.witixin.mountables2.network.PacketHandler;
+import net.witixin.mountables2.network.server.ServerRequestMountableInfoPacket;
 import net.witixin.mountables2.network.server.ServerUpdateMountAIPacket;
 
 public class MountableAIScreen extends CommandChipScreen {
@@ -39,11 +44,15 @@ public class MountableAIScreen extends CommandChipScreen {
     private final SwitchableWidget AIR_HOP = new SwitchableWidget(160, 110, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, Mountable.FLYING_MOVEMENT.HOP.name());
 
     public MountableAIScreen(MountableInfo info) {
-        super(new TextComponent("ai_selection_screen"), info);
+        super(info);
     }
 
     @Override
     protected void init() {
+
+        int posX = minecraft.getWindow().getGuiScaledWidth();
+        int posY = minecraft.getWindow().getGuiScaledHeight();
+
         if (this.canSwim){
             this.SWIM_WIDGET = this.addRenderableWidget(new IndividualSwitchableWidget((this.width - 128) /2-140, (this.height-256)  /2 + 140, 100, 20, BIG_BUTTON_OFF, BIG_BUTTON_ON, "SWIM", true, trackedMountable, waterState));
             this.addRenderableWidget(new LinkedSwitchableWidget((this.width - 128) /2, (this.height-256 ) /2, 100, 60, trackedMountable, this.WATER_MODE, ServerUpdateMountAIPacket.class, Mountable.WATER_MOVEMENT.class.getSimpleName(), FLOAT, SINK, WATER_SWIM));
@@ -62,8 +71,9 @@ public class MountableAIScreen extends CommandChipScreen {
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         if (SCREEN_CHANGE_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
-            MountableInfo info = new MountableInfo(trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, this.waterState, this.flightState, this.canSwim, this.canWalk, this.canFly);
-            Minecraft.getInstance().setScreen(new CommandChipScreen(new TextComponent("commandchipscreen"), info));
+            //REquest packet
+            PacketHandler.INSTANCE.sendToServer(new ServerRequestMountableInfoPacket(trackedMountable));
+            Minecraft.getInstance().setScreen(new CommandChipScreen(CommandChipScreen.mountableInfo));
         }
         if (SWIM_WIDGET != null && SWIM_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)){
             SWIM_WIDGET.setEnabled(!SWIM_WIDGET.isEnabled());
@@ -92,6 +102,7 @@ public class MountableAIScreen extends CommandChipScreen {
     public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         if (canSwim ||canFly || canWalk){
+            //TODO Change screens to use TranslationComponents
             Minecraft.getInstance().font.drawShadow(pPoseStack, "AI", (this.width -128)/2 - 90 - Minecraft.getInstance().font.width("AI") / 2, (this.height -256 )/2 + 30, 0xffffff);
         }
         if (canSwim){

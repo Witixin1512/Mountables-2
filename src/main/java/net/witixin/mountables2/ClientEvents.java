@@ -16,10 +16,6 @@ public class ClientEvents {
         event.registerEntityRenderer(Reference.MOUNTABLE_ENTITY.get(), MountableRenderer::new);
     }
 
-    @SubscribeEvent
-    public static void setupModClient(final FMLClientSetupEvent event){
-        ClientForgeEvents.setup();
-    }
 
 
 }

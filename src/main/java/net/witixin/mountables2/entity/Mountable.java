@@ -175,6 +175,13 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         return false;
     }
 
+    public void resetDefaultDataParameters(){
+        setGroundMode(GROUND_MOVEMENT.WALK.name());
+        setFreeMode(NON_RIDER.WALK.name());
+        setWaterMode(WATER_MOVEMENT.FLOAT.name());
+        setFlightMode(FLYING_MOVEMENT.NONE.name());
+        this.onGround = true;
+    }
 
     @Override
     public void tick(){
@@ -232,16 +239,15 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         if (this.isAlive()) {
             //Flight or water controls; Water doesn't work yet
             if (this.isVehicle() && canMove3D()){
-                    LivingEntity rider = (LivingEntity) this.getPassengers().get(0);
-                if ((this.isInWaterOrBubble() && this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name())) || !this.isInWaterOrBubble() && this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())){
+                LivingEntity rider = (LivingEntity) this.getPassengers().get(0);
+                if ( !this.onGround &&  (this.isInWaterOrBubble() && this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name())) || (!this.isInWaterOrBubble() && this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())) ){
                     this.entityData.set(IS_FLYING, true);
                     }
-                    if (this.entityData.get(IS_FLYING) && (this.isInWaterOrBubble() && !this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name()) || (!this.isInWaterOrBubble() && !this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())))){
+                    if ( this.entityData.get(IS_FLYING) && (this.isInWaterOrBubble() && !this.entityData.get(WATER_MODE).matches(WATER_MOVEMENT.SWIM.name()) || (!this.isInWaterOrBubble() && !this.entityData.get(FLIGHT_MODE).matches(FLYING_MOVEMENT.FLY.name())))){
                         this.entityData.set(IS_FLYING, false);
                     }
                     this.setOnGround(!isFlying);
                     if (this.entityData.get(IS_FLYING)) {
-                        System.out.println("flight");
                         this.setNoGravity(true);
 
                         this.setYRot(rider.getYRot());
@@ -257,9 +263,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                             moveForward = this.getFlyingSpeed();
                             this.setXRot( -Mth.clamp(rider.getXRot(), -10, 10));
                             this.setRot(this.getYRot(), this.getXRot());
-                            if (rider.getXRot() < -10 || rider.getXRot() > 10) {
+                            if (rider.getXRot() < 10 || rider.getXRot() > 10) {
                                 yComponent = -(Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
-                                if (!this.entityData.get(IS_FLYING) && yComponent > 0) this.entityData.set(IS_FLYING, true);
+                                if (!this.entityData.get(IS_FLYING) && yComponent > 0 && !this.onGround) this.entityData.set(IS_FLYING, true);
                                 else if (this.entityData.get(IS_FLYING) && yComponent < 0 && downSolid)
                                     this.entityData.set(IS_FLYING, false);
                             }
@@ -269,7 +275,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                             this.setRot(this.getYRot(), this.getXRot());
                             if (rider.getXRot() < -10 || rider.getXRot() > 10) {
                                 yComponent = (Math.toRadians(rider.getXRot()) * this.getFlyingSpeed());
-                                if (!this.entityData.get(IS_FLYING) && yComponent > 0) this.entityData.set(IS_FLYING, true);
+                                if (!this.entityData.get(IS_FLYING) && yComponent > 0 && !this.onGround) this.entityData.set(IS_FLYING, true);
                                 else if (this.entityData.get(IS_FLYING) && yComponent < 0 && downSolid)
                                     this.entityData.set(IS_FLYING, false);
                             }
@@ -289,8 +295,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             }
 
             if (this.isVehicle() && this.canBeControlledByRider()) {
-                //All modes I think
-                System.out.println("Doesn't care if player input exists");
                 LivingEntity livingentity = (LivingEntity)this.getControllingPassenger();
                 this.setYRot(livingentity.getYRot());
                 this.yRotO = this.getYRot();
@@ -345,10 +349,10 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 }
 
                 this.flyingSpeed = this.getSpeed() * 0.1F;
-                if (this.isControlledByLocalInstance()) {
+                if (this.isControlledByLocalInstance() && !this.getGroundMode().matches(GROUND_MOVEMENT.NONE.name())) {
                     float speed = this.isSlowOnLand() ? 0.05F : this.getFlyingSpeed();
                     this.setSpeed(speed);
-                    System.out.println("are we moving");
+                    //Move the groundmode check to the caclulate speed shenanigans
                     super.travel(new Vec3((double)f, travelVec.y, (double)f1));
                 } else if (livingentity instanceof Player) {
                     this.setDeltaMovement(Vec3.ZERO);
@@ -364,9 +368,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 // flight logic
                 if (livingentity.getXRot() < -25 && livingentity.zza > 0) this.entityData.set(IS_FLYING, true);
             } else {
-                System.out.println("AI");
                 //AI MODE!
                 float speed = this.isSlowOnLand() ? 0.05F : this.getFlyingSpeed();
+                //This getFlyingSpeed = any speed I presume.
                 this.setSpeed(speed);
                 this.flyingSpeed = 0.02F;
                 if (this.onGround && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && (travelVec.x != 0 || travelVec.z != 0)){
@@ -376,6 +380,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                     }
                     hopTimer++;
                 }
+
                 super.travel(travelVec);
             }
 
@@ -476,8 +481,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     @Override
     public void positionRider(Entity pPassenger) {
         super.positionRider(pPassenger);
-        if (pPassenger instanceof Mob) {
-            Mob mob = (Mob)pPassenger;
+        if (pPassenger instanceof Mob mob) {
             this.yBodyRot = mob.yBodyRot;
         }
             MountableData data = this.getMountableData();
@@ -487,6 +491,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             }
 
     }
+
     @Override
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
@@ -521,8 +526,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             return InteractionResult.SUCCESS;
         }
         if (itemstack.getItem().equals(Reference.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide && this.getOwnerUUID().equals(pPlayer.getUUID())){
-            Boolean[] moveRestrictions = this.getMountableData().ai_modes();
-            MountableInfo info = new MountableInfo(this.getUUID(), this.getFollowMode(), this.getFreeMode(), this.getGroundMode(), this.getWaterMode(), this.getFlightMode(), this.canFreeSwim(), this.canFreeFly(), moveRestrictions[0], moveRestrictions[1], moveRestrictions[2]);
+            MountableInfo info = this.generateMountableInfo();
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()-> (ServerPlayer) pPlayer), new ClientOpenScreenPacket(info));
             return InteractionResult.SUCCESS;
         }
@@ -565,6 +569,11 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             }
         }
         return PlayState.CONTINUE;
+    }
+
+    public MountableInfo generateMountableInfo(){
+        Boolean[] moveRestrictions = this.getMountableData().ai_modes();
+        return new MountableInfo(this.getUUID(), this.getFollowMode(), this.getFreeMode(), this.getGroundMode(), this.getWaterMode(), this.getFlightMode(), this.canFreeSwim(), this.canFreeFly(), moveRestrictions[0], moveRestrictions[1], moveRestrictions[2]);
     }
 
     @Override
@@ -793,4 +802,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public enum FLYING_MOVEMENT {
         NONE, FLY, HOP
     }
+
+
+
 }
