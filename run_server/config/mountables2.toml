@@ -1,0 +1,5 @@
+#The maximum FE that a battery can hold
+max_battery_amount = 100000
+#The radius, from the battery's core that the multiblock extends to
+radius = 2
+
