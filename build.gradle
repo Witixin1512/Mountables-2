@@ -15,7 +15,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.18.2'
-version = mc_version + '-1.0.1'
+version = mc_version + '-1.0.2'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -28,7 +28,7 @@ minecraft {
 
     runs {
         client {
-            workingDirectory project.file('runClient')
+            workingDirectory project.file('run')
             properties 'mixin.env.remapRefMap': 'true'
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
@@ -98,13 +98,13 @@ repositories {
 
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.20'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.54'
     //geckolib
     //Has something borken but yeah
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.26')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.28')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
-    //runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
-    runtimeOnly fg.deobf("curse.maven:open-loader-354339:3697234")
+    runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
+    //runtimeOnly fg.deobf("curse.maven:open-loader-354339:3697234")
     //runtimeOnly fg.deobf("curse.maven:bookshelf-228525:3732237")
 }
 
