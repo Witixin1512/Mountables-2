@@ -745,16 +745,17 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         }
     }
 
-    private void processAttributes(Map<String, Double> attributeMap){
+    private void processAttributes(Map<String, Double> dataAttributeMap){
         Class<Attributes> attriClass = Attributes.class;
-        for (Map.Entry<String, Double> entry : attributeMap.entrySet()){
+        Attribute attribute = null;
+        for (Map.Entry<String, Double> entry : dataAttributeMap.entrySet()){
             try {
                 String toCompare = FMLEnvironment.production ? Reference.SRG_ATTRIBUTES_MAP.get(entry.getKey()) : entry.getKey();
-                Attribute attribute = (Attribute) attriClass.getField(toCompare).get(null);
-                this.getAttribute(attribute).setBaseValue(entry.getValue());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+                attribute = (Attribute) attriClass.getField(toCompare).get(null);
+            } catch (NoSuchFieldException | IllegalAccessException | NullPointerException e) {
                 e.printStackTrace();
             }
+            this.getAttribute(attribute).setBaseValue(entry.getValue());
         }
     }
 

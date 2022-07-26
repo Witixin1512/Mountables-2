@@ -99,8 +99,6 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.54'
-    //geckolib
-    //Has something borken but yeah
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.28')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
     runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")

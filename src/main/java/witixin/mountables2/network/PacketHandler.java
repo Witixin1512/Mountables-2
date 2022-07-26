@@ -6,7 +6,6 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import witixin.mountables2.Reference;
 import witixin.mountables2.network.client.ClientOpenScreenPacket;
 import witixin.mountables2.network.client.ClientUpdateMountableInfoPacket;
-import net.witixin.mountables2.network.server.*;
 import witixin.mountables2.network.server.*;
 
 public class PacketHandler {
