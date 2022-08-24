@@ -1,7 +1,8 @@
 package witixin.mountables2.data.files;
 
 import net.minecraft.resources.ResourceLocation;
-import witixin.mountables2.Reference;
+import net.minecraft.server.packs.PackType;
+import witixin.mountables2.Mountables2Mod;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ public class TemplateFile {
      */
 
 
-    public static final TemplateFile EMPTY = new TemplateFile(new ResourceLocation(Reference.MODID, "templates/empty"), "") {
+    public static final TemplateFile EMPTY = new TemplateFile(new ResourceLocation(Mountables2Mod.MODID, "templates/empty"), "") {
         @Override
         public void setValue(String key, String value) {
         }
@@ -31,7 +32,7 @@ public class TemplateFile {
         this.location = location;
     }
 
-    public static TemplateFile of(ResourceType type, ResourceLocation location) {
+    public static TemplateFile of(PackType type, ResourceLocation location) {
         final String template = read(type, location);
         if (template == null) {
             return EMPTY;
@@ -39,9 +40,9 @@ public class TemplateFile {
         return new TemplateFile(location, template);
     }
 
-    public static String read(ResourceType type, ResourceLocation location) {
+    public static String read(PackType type, ResourceLocation location) {
         final String format = "/%s/%s/%s.json";
-        final String folderName = type.getFolderName();
+        final String folderName = type.getDirectory();
         final String path = String.format(format, folderName, location.getNamespace(), location.getPath());
 
         final InputStream resourceAsStream = TemplateFile.class.getResourceAsStream(path);

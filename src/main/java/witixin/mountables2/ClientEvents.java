@@ -7,12 +7,14 @@ import net.minecraftforge.fml.common.Mod;
 import witixin.mountables2.client.MountableRenderer;
 
 
-@Mod.EventBusSubscriber(modid = Reference.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Mountables2Mod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
+
+
 
     @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(Reference.MOUNTABLE_ENTITY.get(), MountableRenderer::new);
+        event.registerEntityRenderer(Mountables2Mod.MOUNTABLE_ENTITY.get(), MountableRenderer::new);
     }
 
 

@@ -3,7 +3,7 @@ package witixin.mountables2.network;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
-import witixin.mountables2.Reference;
+import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.network.client.ClientOpenScreenPacket;
 import witixin.mountables2.network.client.ClientUpdateMountableInfoPacket;
 import witixin.mountables2.network.server.*;
@@ -12,7 +12,7 @@ public class PacketHandler {
     private static int counter = 0;
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(Reference.MODID, "main"),
+            new ResourceLocation(Mountables2Mod.MODID, "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
@@ -27,6 +27,6 @@ public class PacketHandler {
         INSTANCE.registerMessage(counter++, ServerUpdateMountAIPacket.class, ServerUpdateMountAIPacket::encode, ServerUpdateMountAIPacket::decode, ServerUpdateMountAIPacket::handle);
         INSTANCE.registerMessage(counter++, ServerUpdateMountFreePacket.class, ServerUpdateMountFreePacket::encode, ServerUpdateMountFreePacket::decode, ServerUpdateMountFreePacket::handle);
         INSTANCE.registerMessage(counter++, ServerRequestMountableInfoPacket.class, ServerRequestMountableInfoPacket::encode, ServerRequestMountableInfoPacket::decode, ServerRequestMountableInfoPacket::handle);
-    }
+  }
 
 }

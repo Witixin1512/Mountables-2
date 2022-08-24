@@ -5,10 +5,10 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import witixin.mountables2.Reference;
-import witixin.mountables2.entity.Mountable;
 import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
 import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
+import witixin.mountables2.Mountables2Mod;
+import witixin.mountables2.entity.Mountable;
 
 public class MountableLayer extends GeoLayerRenderer<Mountable> {
     public MountableLayer(IGeoRenderer<Mountable> entityRendererIn) {
@@ -17,7 +17,7 @@ public class MountableLayer extends GeoLayerRenderer<Mountable> {
 
     @Override
     protected ResourceLocation getEntityTexture(Mountable entityIn) {
-        return Reference.rl("textures/" + entityIn.getEmissiveTexture() + ".png");
+        return Mountables2Mod.rl("textures/" + entityIn.getEmissiveTexture() + ".png");
     }
 
     @Override

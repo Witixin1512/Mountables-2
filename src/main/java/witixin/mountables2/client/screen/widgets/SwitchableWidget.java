@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
@@ -14,7 +15,7 @@ public class SwitchableWidget extends AbstractWidget {
     private final ResourceLocation off;
     private final ResourceLocation on;
     private final String name;
-
+    private final String renderText;
     private boolean isEnabled = false;
 
     public boolean isEnabled(){
@@ -24,12 +25,12 @@ public class SwitchableWidget extends AbstractWidget {
         this.isEnabled = bool;
     }
 
-    public SwitchableWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation off,ResourceLocation on, String name) {
+    public SwitchableWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation off,ResourceLocation on, String toRender, String realName) {
         super(pX, pY, pWidth, pHeight, new TextComponent("switchable_widget"));
         this.off = off;
         this.on = on;
-        this.name = name;
-
+        this.name = realName;
+        this.renderText = toRender;
     }
 
     public void updatePos(int pX, int pY){
@@ -43,7 +44,9 @@ public class SwitchableWidget extends AbstractWidget {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, this.isEnabled() ? on : off);
         this.blit(pPoseStack, this.x, this.y, 0, 0, this.width, this.height, this.width, this.height);
-        Minecraft.getInstance().font.drawShadow(pPoseStack, fixName(getName()), this.x + 50 - Minecraft.getInstance().font.width(getName()) / 2f, this.y+6, 0xffffff);
+        String fixedString = fixName(renderText);
+        float amount = Minecraft.getInstance().font.width(fixedString);
+        Minecraft.getInstance().font.drawShadow(pPoseStack, fixedString, this.x + 50 - amount / 2f, this.y+6, 0xffffff);
     }
 
     @Override
@@ -53,10 +56,10 @@ public class SwitchableWidget extends AbstractWidget {
     private String fixName(String original){
         if (original.contains("_")){
             String[] split = name.split("_");
-            return split[0].substring(0, 1) + split[0].substring(1).toLowerCase() + " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1).toLowerCase();
+            return split[0].charAt(0) + split[0].substring(1).toLowerCase() + " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1).toLowerCase();
         }
         else {
-            return original.substring(0, 1) + original.substring(1).toLowerCase();
+            return original.charAt(0) + original.substring(1).toLowerCase();
         }
     }
 

@@ -1,10 +1,28 @@
 {
   "itemGroup.mountables2.ctab" : "Mountables 2",
-  "entity.mountables2.mountable_entity" : "Mount",
+  "entity.mountables2.mountable_entity" : "Mountable",
 
   "item.mountables2.mountable_core" : "Mountable Core",
   "item.mountables2.mysterious_fragment" : "Mysterious Fragment",
   "item.mountables2.command_chip" : "Command Chip",
-  "item.mountables2.mountable" : "Mount"
+  "item.mountables2.mountable" : "Mount",
+
+  "gui.mountables2.ai.ai" : "AI",
+  "gui.mountables2.ai.swim" : "Swim",
+  "gui.mountables2.ai.walk" : "Walk",
+  "gui.mountables2.ai.fly" : "Fly",
+  "gui.mountables2.ai_slow_walk" : "Slow Walk",
+  "gui.mountables2.ai.none" : "None",
+  "gui.mountables2.ai.hop" : "Hop",
+  "gui.mountables2.ai.float" : "Float",
+  "gui.mountables2.ai.sink" : "Sink",
+  "gui.mountables2.ai.jump" : "Jump",
+
+  "gui.mountables2.chip.wander" : "Wander",
+  "gui.mountables2.chip.stay" : "Stay",
+  "gui.mountables2.chip.follow" : "Follow",
+
+  "gui.mountables2.chip.model" : "Model",
+  "gui.mountables2.chip.texture" : "Texture"
 
 }

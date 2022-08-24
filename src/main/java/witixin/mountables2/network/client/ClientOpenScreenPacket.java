@@ -23,6 +23,8 @@ public class ClientOpenScreenPacket {
     private final boolean canWalk;
     private final boolean canFly;
 
+    private final boolean lockSwitch;
+
     public ClientOpenScreenPacket(MountableInfo info){
         this.id = info.uuid();
         this.followMode = info.followMode();
@@ -35,10 +37,11 @@ public class ClientOpenScreenPacket {
         this.canFly = info.canFly();
         this.canSwim = info.canSwim();
         this.canWalk = info.canWalk();
+        this.lockSwitch = info.isSwitchLocked();
     }
 
     public static void handle(ClientOpenScreenPacket packet, Supplier<NetworkEvent.Context> ctx){
-        MountableInfo info = new MountableInfo(packet.id, packet.followMode, packet.freeMode, packet.groundMode, packet.waterMode, packet.flightMode, packet.waterState, packet.flightState, packet.canSwim, packet.canWalk, packet.canFly);
+        MountableInfo info = new MountableInfo(packet.id, packet.followMode, packet.freeMode, packet.groundMode, packet.waterMode, packet.flightMode, packet.waterState, packet.flightState, packet.canSwim, packet.canWalk, packet.canFly, packet.lockSwitch);
         ctx.get().enqueueWork(() ->
                 DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientPacketUtils.openScreen(info))
         );
@@ -56,8 +59,9 @@ public class ClientOpenScreenPacket {
         buf.writeBoolean(canSwim);
         buf.writeBoolean(canWalk);
         buf.writeBoolean(canFly);
+        buf.writeBoolean(lockSwitch);
     }
     public static ClientOpenScreenPacket decode(FriendlyByteBuf buf){
-        return new ClientOpenScreenPacket(new MountableInfo(buf.readUUID(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean()));
+        return new ClientOpenScreenPacket(new MountableInfo(buf.readUUID(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean()));
     }
 }

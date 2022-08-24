@@ -1,7 +1,9 @@
 package witixin.mountables2.data.files;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
-import witixin.mountables2.Reference;
+import net.minecraft.server.packs.PackType;
+import witixin.mountables2.Mountables2Mod;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,16 +16,14 @@ public class PackMCMetaTemplate {
      * This code was taken from the ContentTweaker mod.
      */
 
-    //We're in 1.18.2, so format is now 9
-    private static final int format = 9;
 
     private final TemplateFile template;
     private final File mcmetaFile;
 
-    public PackMCMetaTemplate(File containingDirectory, String description) {
-        this.template = TemplateFile.of(ResourceType.DATA, new ResourceLocation(Reference.MODID, "pack.mcmeta"));
+    public PackMCMetaTemplate(File containingDirectory, String description, PackType type) {
+        this.template = TemplateFile.of(PackType.SERVER_DATA, new ResourceLocation(Mountables2Mod.MODID, "pack.mcmeta"));
         template.setValue("PACK_DESCRIPTION", description);
-        template.setValue("PACK_FORMAT", String.valueOf(format));
+        template.setValue("PACK_FORMAT", String.valueOf(type.getVersion(SharedConstants.getCurrentVersion())));
         this.mcmetaFile = new File(containingDirectory, "pack.mcmeta");
     }
 
@@ -33,6 +33,7 @@ public class PackMCMetaTemplate {
                 String content = template.getContent();
                 writer.println(content);
             } catch(IOException e) {
+
             }
         }
     }

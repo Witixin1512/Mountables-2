@@ -6,14 +6,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
-import witixin.mountables2.entity.Mountable;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
+import witixin.mountables2.entity.Mountable;
 
 public class MountableRenderer extends GeoEntityRenderer<Mountable> {
     public MountableRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new MountableModel());
-        this.addLayer(new MountableLayer(this));
+        //this.addLayer(new MountableLayer(this));
+        this.addLayer(new MountableGlowingLayer(this));
     }
 
     @Override

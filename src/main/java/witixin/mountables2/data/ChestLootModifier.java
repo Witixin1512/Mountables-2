@@ -9,8 +9,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.common.loot.LootModifier;
-import witixin.mountables2.Reference;
 import org.jetbrains.annotations.NotNull;
+import witixin.mountables2.Mountables2Mod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,12 +46,12 @@ public class ChestLootModifier extends LootModifier {
     protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context) {
         if (resLocs.contains(context.getQueriedLootTableId())){
              if (context.getRandom().nextDouble() * 100 <= weight){
-                generatedLoot.add(Reference.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
+                generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
                 if (context.getRandom().nextDouble() <= 1.0/2){
-                    generatedLoot.add(Reference.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
+                    generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
                 }
                 if (context.getRandom().nextDouble() <= 1.0/4){
-                    generatedLoot.add(Reference.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
+                    generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
                 }
             }
         }

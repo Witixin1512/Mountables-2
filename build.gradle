@@ -15,7 +15,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.18.2'
-version = mc_version + '-1.0.2'
+version = mc_version + '-1.0.4'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -24,7 +24,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
     mappings channel: 'parchment', version: '2022.03.13-1.18.2'
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
     runs {
         client {
@@ -98,10 +98,10 @@ repositories {
 
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.54'
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.28')
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.35')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
-    runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
+    //runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
     //runtimeOnly fg.deobf("curse.maven:open-loader-354339:3697234")
     //runtimeOnly fg.deobf("curse.maven:bookshelf-228525:3732237")
 }

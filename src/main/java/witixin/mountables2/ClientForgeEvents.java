@@ -14,12 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Mountables2Mod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientForgeEvents {
 
     private final static Map<String, Supplier<SoundEvent>> substitute = Util.make( () ->{
         Map<String, Supplier<SoundEvent>> map = new  HashMap<>();
-        map.put("idle", Reference.EMPTY_SOUND_EVENT);
+        map.put("idle", Mountables2Mod.EMPTY_SOUND_EVENT);
         map.put("walk", () -> SoundEvents.GRASS_STEP);
         map.put("hurt", () -> SoundEvents.GENERIC_HURT);
         map.put("death", () -> SoundEvents.GENERIC_DEATH);
@@ -32,7 +32,7 @@ public class ClientForgeEvents {
     public static void soundEvent(final PlaySoundEvent event){
         WeighedSoundEvents weighedsoundevents = event.getSound().resolve(event.getEngine().soundManager);
         final String toUse = event.getSound().getLocation().getPath().split("\\.")[1];
-        if (event.getSound().getLocation().getNamespace().matches(Reference.MODID) && weighedsoundevents == null) {
+        if (event.getSound().getLocation().getNamespace().matches(Mountables2Mod.MODID) && weighedsoundevents == null) {
             if (substitute.containsKey(toUse)){
                 event.setSound(SimpleSoundInstance.forAmbientAddition(substitute.get(toUse).get()));
             }

@@ -13,5 +13,5 @@
       "MAX_HEALTH" : 20,
       "FLYING_SPEED" : 1,
       "FOLLOW_RANGE" : 20
-    }
+  }
 }

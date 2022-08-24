@@ -23,18 +23,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.network.PacketDistributor;
-import witixin.mountables2.Reference;
-import witixin.mountables2.data.MountableData;
-import witixin.mountables2.data.MountableInfo;
-import witixin.mountables2.entity.goal.MountableFloatGoal;
-import witixin.mountables2.entity.goal.MountableFollowGoal;
-import witixin.mountables2.entity.goal.MountableWanderGoal;
-import witixin.mountables2.network.client.ClientOpenScreenPacket;
-import witixin.mountables2.network.PacketHandler;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -42,14 +38,22 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
+import witixin.mountables2.Mountables2Mod;
+import witixin.mountables2.data.MountableData;
+import witixin.mountables2.data.MountableInfo;
+import witixin.mountables2.data.MountableManager;
+import witixin.mountables2.entity.goal.MountableFloatGoal;
+import witixin.mountables2.entity.goal.MountableFollowGoal;
+import witixin.mountables2.entity.goal.MountableWanderGoal;
+import witixin.mountables2.network.PacketHandler;
+import witixin.mountables2.network.client.ClientOpenScreenPacket;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class Mountable extends TamableAnimal implements IAnimatable, PlayerRideableJumping {
-
-    public static final String DEFAULT_NAME = "companion_block";
     private static final double VERTICAL_SPEED_COEFICIENT = Math.cos(Math.toRadians(87));
     /*
     Credit to the Movement goes to LukeGrahamLaundry, maker of the Original Mountables Mod.
@@ -77,6 +81,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     boolean justAirJumped = false;
     boolean justLanded = false;
 
+    boolean lockSwitch;
+
     public static final EntityDataAccessor<String> UNIQUE_NAME = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> IS_FLYING = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<String> FOLLOW_TYPE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
@@ -93,13 +99,14 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public static final EntityDataAccessor<Boolean> CAN_FREE_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> CAN_FREE_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
 
+    public static final EntityDataAccessor<Float> ENTITY_WIDTH = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Float> ENTITY_HEIGHT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
 
-
-    private AnimationFactory factory = new AnimationFactory(this);
+    private final AnimationFactory factory = new AnimationFactory(this);
     private MountableData mountableData;
 
     public Mountable(EntityType<Mountable> mountableEntityEntityType, Level level) {
-        super(Reference.MOUNTABLE_ENTITY.get(), level);
+        super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
         this.maxUpStep = 1;
         if (!this.level.isClientSide){
             this.setFreeFly(getMountableData().ai_modes()[2]);
@@ -135,36 +142,34 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.dropMountableItem();
     }
 
-
-
     @javax.annotation.Nullable
     protected SoundEvent getAmbientSound() {
-        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".idle"));
+        return new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME) + ".idle"));
     }
     @Nullable
     protected SoundEvent getHurtSound(DamageSource source){
-        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".hurt"));
+        return new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME) + ".hurt"));
 
     }
     @Nullable
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockState){
-        this.playSound(new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".walk")), 0.8f, 0.15f);
+        this.playSound(new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME) + ".walk")), 0.8f, 0.15f);
     }
 
     @Override
     protected SoundEvent getSwimSound(){
-        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME)+ ".swim"));
+        return new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME)+ ".swim"));
     }
 
     @Override
     protected SoundEvent getSwimSplashSound(){
-        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".splash"));
+        return new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME) + ".splash"));
     }
 
     @Override
     protected SoundEvent getDeathSound(){
-        return new SoundEvent(Reference.rl(this.entityData.get(UNIQUE_NAME) + ".death"));
+        return new SoundEvent(Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME) + ".death"));
     }
 
 
@@ -229,8 +234,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.targetSquish *= 0.6F;
     }
 
-    //TODO Override sounds.
-
 
     public void travel(Vec3 travelVec) {
         if (this.isAlive()) {
@@ -250,7 +253,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                         this.setYRot(rider.getYRot());
                         this.yRotO = rider.getYRot();
 
-                        double yComponent = 0;
+                        double yComponent;
                         double moveForward = 0;
 
                         BlockState downState = this.level.getBlockState(this.blockPosition().below(2));
@@ -279,7 +282,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                         }
 
                         if (this.isControlledByLocalInstance()){
-                            this.flyingSpeed = (float) this.getFlyingSpeed();
+                            this.flyingSpeed = this.getFlyingSpeed();
                             this.setSpeed(this.getFlyingSpeed());
                             super.travel(new Vec3(rider.xxa * this.getFlyingSpeed(), VERTICAL_SPEED_COEFICIENT * rider.getLookAngle().y, moveForward));
                         } else if (rider instanceof Player) {
@@ -396,7 +399,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     @Override
     protected void defineSynchedData(){
         super.defineSynchedData();
-        this.entityData.define(UNIQUE_NAME, DEFAULT_NAME);
+        this.entityData.define(UNIQUE_NAME, MountableManager.get().get(0).uniqueName());
         this.entityData.define(IS_FLYING, false);
         this.entityData.define(FOLLOW_TYPE, "FOLLOW");
         this.entityData.define(EMISSIVE_TEXTURE, -1);
@@ -408,6 +411,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.entityData.define(CAN_FREE_FLY, false);
         this.entityData.define(CAN_FREE_SWIM, false);
         this.entityData.define(SQUISHY_SQUISHY, false);
+        this.entityData.define(ENTITY_WIDTH, 1.0f);
+        this.entityData.define(ENTITY_HEIGHT, 1.0f);
     }
 
     private float getFlyingSpeed(){
@@ -434,7 +439,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         super.readAdditionalSaveData(tag);
         this.setUniqueName(tag.getString("unique_mountable_name"));
         this.setFollowMode(tag.getString("follow_mode"));
-        this.setEmissiveTexture(tag.getInt("emmisive_texture"));
+        this.setAbsoluteEmissive(tag.getInt("emissive_texture"));
         this.setModelPosition(tag.getInt("model_position"));
         this.setFreeMode(tag.getString("free_mode"));
         this.setGroundMode(tag.getString("ground_mode"));
@@ -443,6 +448,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.setFreeFly(tag.getBoolean("free_flight"));
         this.setFreeSwim(tag.getBoolean("free_swim"));
         this.entityData.set(IS_FLYING, tag.getBoolean("flying"));
+        this.entityData.set(ENTITY_WIDTH, tag.getFloat("mountable_width"));
+        this.entityData.set(ENTITY_HEIGHT, tag.getFloat("mountable_height"));
+        this.lockSwitch = tag.getBoolean("lock_switch");
     }
 
 
@@ -460,6 +468,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         tag.putBoolean("free_flight", this.canFreeFly());
         tag.putBoolean("free_swim", this.canFreeSwim());
         tag.putBoolean("flying", this.entityData.get(IS_FLYING));
+        tag.putFloat("mountable_width", this.entityData.get(ENTITY_WIDTH));
+        tag.putFloat("mountable_height", this.entityData.get(ENTITY_HEIGHT));
+        tag.putBoolean("lock_switch", lockSwitch);
     }
 
 
@@ -522,12 +533,12 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             this.dropMountableItem();
             return InteractionResult.SUCCESS;
         }
-        if (itemstack.getItem().equals(Reference.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide && this.getOwnerUUID().equals(pPlayer.getUUID())){
+        if (itemstack.getItem().equals(Mountables2Mod.COMMAND_CHIP.get()) && !pPlayer.level.isClientSide && this.getOwnerUUID().equals(pPlayer.getUUID())){
             MountableInfo info = this.generateMountableInfo();
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()-> (ServerPlayer) pPlayer), new ClientOpenScreenPacket(info));
             return InteractionResult.SUCCESS;
         }
-        if (!this.isVehicle() && !pPlayer.level.isClientSide && pPlayer.getMainHandItem().getItem() != Reference.COMMAND_CHIP.get()) {
+        if (!this.isVehicle() && !pPlayer.level.isClientSide && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
             this.doPlayerRide(pPlayer);
             return InteractionResult.SUCCESS;
         }
@@ -536,7 +547,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     public void dropMountableItem(){
-        ItemStack mountable_item = new ItemStack(Reference.MOUNTABLE.get());
+        ItemStack mountable_item = new ItemStack(Mountables2Mod.MOUNTABLE.get());
         mountable_item.getOrCreateTag().putString("MOUNTABLE", this.entityData.get(UNIQUE_NAME));
         mountable_item.getTag().putString("FOLLOW_MODE", this.getFollowMode());
         mountable_item.getTag().putUUID("OWNER", this.getOwnerUUID());
@@ -548,6 +559,9 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         mountable_item.getTag().putString("WATER_MODE", this.getWaterMode());
         if (this.isDeadOrDying()){
             mountable_item.getTag().putBoolean("dead", true);
+        }
+        if (this.lockSwitch){
+            mountable_item.getTag().putBoolean("locked", true);
         }
         this.spawnAtLocation(mountable_item);
     }
@@ -570,7 +584,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public MountableInfo generateMountableInfo(){
         Boolean[] moveRestrictions = this.getMountableData().ai_modes();
-        return new MountableInfo(this.getUUID(), this.getFollowMode(), this.getFreeMode(), this.getGroundMode(), this.getWaterMode(), this.getFlightMode(), this.canFreeSwim(), this.canFreeFly(), moveRestrictions[0], moveRestrictions[1], moveRestrictions[2]);
+        return new MountableInfo(this.getUUID(), this.getFollowMode(), this.getFreeMode(), this.getGroundMode(), this.getWaterMode(), this.getFlightMode(), this.canFreeSwim(), this.canFreeFly(), moveRestrictions[0], moveRestrictions[1], moveRestrictions[2], lockSwitch);
     }
 
     @Override
@@ -594,14 +608,14 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     public ResourceLocation getUniqueResourceLocation(){
-        return Reference.rl(this.entityData.get(UNIQUE_NAME));
+        return Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME));
     }
     public void setUniqueName(String s){
         this.entityData.set(UNIQUE_NAME, s);
     }
 
     public MountableData getMountableData(){
-        if (this.mountableData == null) loadMountableData(Reference.findData(getUniqueResourceLocation().getPath()));
+        if (this.mountableData == null) loadMountableData(Mountables2Mod.findData(getUniqueResourceLocation().getPath()));
         return this.mountableData;
     }
 
@@ -621,8 +635,10 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         return this.entityData.get(EMISSIVE_TEXTURE);
     }
     public String getEmissiveTexture(){
-        if (getEmissiveTextureIndex() == -1)return "transparent";
-        return this.getMountableData().emissiveTextures().get(getEmissiveTextureIndex());
+        final List<String> mountableData = getMountableData().emissiveTextures();
+        final int textIndex = getEmissiveTextureIndex();
+        if (textIndex == -1 || textIndex >= mountableData.size())return "transparent";
+        return mountableData.get(getEmissiveTextureIndex());
     }
     //Should be server only
     public void setEmissiveTexture(int index){
@@ -637,30 +653,61 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
 
     public void setModelPosition(int index){
-        if (index < 0) index = Reference.MOUNTABLE_MANAGER.get().size() - 1;
-        if (index >= Reference.MOUNTABLE_MANAGER.get().size()) index = 0;
+        if (index < 0) index = MountableManager.get().size() - 1;
+        if (index >= MountableManager.get().size()) index = 0;
         this.entityData.set(MODEL_POSITION, index);
     }
     public int getModelPosition(){
         return this.entityData.get(MODEL_POSITION);
     }
 
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> pKey) {
+        if (ENTITY_HEIGHT.equals(pKey)) {
+            this.refreshDimensions();
+        }
+        super.onSyncedDataUpdated(pKey);
+    }
+
+
     public void loadMountableData(MountableData data){
+        this.mountableData = data;
         this.setUniqueName(data.uniqueName());
         this.setCustomNameVisible(true);
         this.setCustomName(new TextComponent(data.displayName()));
-        this.mountableData = data;
         this.processAttributes(data.attributeMap());
+        this.entityData.set(ENTITY_WIDTH, (float)data.width());
+        this.entityData.set(ENTITY_HEIGHT, (float)data.height());
+    }
+    
+    public void refreshDimensions(){
+        EntityDimensions preEventDim = EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
+        this.eyeHeight = this.getEyeHeight(this.getPose(),preEventDim);
+        net.minecraftforge.event.entity.EntityEvent.Size sizeEvent = ForgeEventFactory.getEntitySizeForge(this, this.getPose(),preEventDim, eyeHeight);
+        this.dimensions = sizeEvent.getNewSize();
+        this.eyeHeight = sizeEvent.getNewEyeHeight();
+        this.reapplyPosition();
+        boolean flag = (double)this.dimensions.width <= 4.0D && (double)this.dimensions.height <= 4.0D;
+        if (!this.level.isClientSide && !this.firstTick && !this.noPhysics && flag && (this.dimensions.width > preEventDim.width || this.dimensions.height > preEventDim.height)) {
+            Vec3 vec3 = this.position().add(0.0D, (double)preEventDim.height / 2.0D, 0.0D);
+            double d0 = (double)Math.max(0.0F, this.dimensions.width - preEventDim.width) + 1.0E-6D;
+            double d1 = (double)Math.max(0.0F, this.dimensions.height - preEventDim.height) + 1.0E-6D;
+            VoxelShape voxelshape = Shapes.create(AABB.ofSize(vec3, d0, d1, d0));
+            EntityDimensions finalEntitydimensions = this.dimensions;
+            this.level.findFreePosition(this, voxelshape, vec3, (double)this.dimensions.width, (double)this.dimensions.height, (double)this.dimensions.width).ifPresent((p_185956_) -> {
+                this.setPos(p_185956_.add(0.0D, (double)(-finalEntitydimensions.height) / 2.0D, 0.0D));
+            });
+        }
     }
 
     public void loadMountableData(int index){
-        if (index < 0) index = Reference.MOUNTABLE_MANAGER.get().size() - 1;
-        if (index >= Reference.MOUNTABLE_MANAGER.get().size()) index = 0;
-        loadMountableData(Reference.MOUNTABLE_MANAGER.get().get(index));
+        if (index < 0) index = MountableManager.get().size() - 1;
+        if (index >= MountableManager.get().size()) index = 0;
+        loadMountableData(MountableManager.get().get(index));
     }
 
     public void loadDefault(String s){
-        loadMountableData(Reference.findData(s));
+        loadMountableData(Mountables2Mod.findData(s));
     }
 
     public boolean canFreeFly(){return entityData.get(CAN_FREE_FLY);}
@@ -746,17 +793,20 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     private void processAttributes(Map<String, Double> dataAttributeMap){
-        Class<Attributes> attriClass = Attributes.class;
-        Attribute attribute = null;
         for (Map.Entry<String, Double> entry : dataAttributeMap.entrySet()){
             try {
-                String toCompare = FMLEnvironment.production ? Reference.SRG_ATTRIBUTES_MAP.get(entry.getKey()) : entry.getKey();
-                attribute = (Attribute) attriClass.getField(toCompare).get(null);
-            } catch (NoSuchFieldException | IllegalAccessException | NullPointerException e) {
+                //String toCompare = FMLEnvironment.production ? Reference.SRG_ATTRIBUTES_MAP.get(entry.getKey()) : entry.getKey();
+                Attribute attribute = (Attribute) ObfuscationReflectionHelper.findField(Attributes.class, Mountables2Mod.SRG_ATTRIBUTES_MAP.get(entry.getKey())).get(null);
+                this.getAttribute(attribute).setBaseValue(entry.getValue());
+            } catch (IllegalAccessException | NullPointerException e) {
                 e.printStackTrace();
             }
-            this.getAttribute(attribute).setBaseValue(entry.getValue());
+
         }
+    }
+
+    public void setLockSwitch(boolean bool){
+        this.lockSwitch = bool;
     }
 
     @Override
