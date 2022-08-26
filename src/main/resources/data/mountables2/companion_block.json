@@ -3,7 +3,7 @@
   "display_name" : "Companion",
   "hitbox" : [1.0, 1.0],
   "riding_position" : [0.0, -0.1, 0.0],
-  "emissive_textures" : ["companion_block_emissive", "companion_block_translucent"],
+  "emissive_textures" : ["companion_block_emissive"],
   "canSwim": true,
   "canFly" : true,
   "canWalk": true,
