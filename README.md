@@ -5,3 +5,4 @@
 
 To get started, add your mountable JSON file to the datapack folder, and your assets to the resourcepack folder. Reload your game, enjoy your mountable!
 More information on the wiki.
+

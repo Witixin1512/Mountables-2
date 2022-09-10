@@ -42,35 +42,6 @@ public class MountableManager extends SimpleJsonResourceReloadListener {
                 e.printStackTrace();
             }
         }
-        if (mountable_list.isEmpty()){
-            JsonObject obj = new JsonObject();
-            obj.addProperty("unique_name", "companion_block");
-            obj.addProperty("display_name", "Companion");
-            JsonArray hitbox = new JsonArray();
-            hitbox.add(1.0);
-            hitbox.add(1.0);
-            obj.add("hitbox",  hitbox);
-            JsonArray ridingPos = new JsonArray();
-            ridingPos.add(0.0);
-            ridingPos.add(-0.1);
-            ridingPos.add(0.0);
-            obj.add("riding_position", ridingPos);
-            obj.addProperty("canSwim", true);
-            obj.addProperty("canFly", true);
-            obj.addProperty("canWalk", true);
-            JsonArray emissiveTexxes = new JsonArray();
-            emissiveTexxes.add("companion_block_emissive");
-            emissiveTexxes.add("companion_block_translucent");
-            obj.add("emissive_textures", emissiveTexxes);
-            JsonObject attributes = new JsonObject();
-            attributes.addProperty("MOVEMENT_SPEED", 0.5);
-            attributes.addProperty("JUMP_STRENGTH", 0.5);
-            attributes.addProperty("MAX_HEALTH", 20);
-            attributes.addProperty("FLYING_SPEED", 1);
-            attributes.addProperty("FOLLOW_RANGE", 20);
-            obj.add("attributes", attributes);
-            loadMountable(obj);
-        }
     }
     private void loadMountable(JsonObject obj){
         String s = GsonHelper.getAsString(obj, "unique_name");

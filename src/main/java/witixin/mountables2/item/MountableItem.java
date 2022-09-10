@@ -1,7 +1,9 @@
 package witixin.mountables2.item;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -18,8 +20,7 @@ public class MountableItem extends Item {
     public InteractionResult useOn(UseOnContext pContext) {
         if (!pContext.getLevel().isClientSide && pContext.getPlayer() != null){
             final ItemStack stack = pContext.getItemInHand();
-            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().create(pContext.getLevel());
-            mountable.setPos(pContext.getClickLocation());
+            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().spawn((ServerLevel) pContext.getLevel(), null,null, null, pContext.getClickedPos(), MobSpawnType.SPAWN_EGG, true, true);
             mountable.setTame(true);
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
             if (stack.getOrCreateTag().contains("MOUNTABLE")){
@@ -45,7 +46,6 @@ public class MountableItem extends Item {
                 //NBT is either invalid or empty here.
                 mountable.loadMountableData(MountableManager.get().get(0));
             }
-            pContext.getLevel().addFreshEntity(mountable);
             pContext.getPlayer().getItemInHand(pContext.getHand()).shrink(1);
         }
         return super.useOn(pContext);

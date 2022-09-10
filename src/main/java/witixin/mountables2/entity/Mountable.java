@@ -492,11 +492,13 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         if (pPassenger instanceof Mob mob) {
             this.yBodyRot = mob.yBodyRot;
         }
-            MountableData data = this.getMountableData();
-            pPassenger.setPos(this.getX() + data.position()[0], this.getY() + data.position()[1], this.getZ() + data.position()[2]);
-            if (pPassenger instanceof LivingEntity) {
-                ((LivingEntity)pPassenger).yBodyRot = this.yBodyRot;
-            }
+        float f3 = Mth.sin(this.yBodyRot * ((float)Math.PI / 180F));
+        float f = Mth.cos(this.yBodyRot * ((float)Math.PI / 180F));
+        MountableData data = this.getMountableData();
+        pPassenger.setPos(this.getX() + data.position()[0] * f3, this.getY() + data.position()[1], this.getZ() + data.position()[2] * f);
+        if (pPassenger instanceof LivingEntity) {
+            ((LivingEntity)pPassenger).yBodyRot = this.yBodyRot;
+        }
 
     }
 

@@ -23,6 +23,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -64,19 +65,14 @@ public class Mountables2Mod {
 
        Naming
        GeckoLib wiki
-
-
      */
 
 
     /*
-    - swapping movements in the command chip seems to fail often; you'll select one but it won't update/change to a completely different one?
     - riding a mount with fly mode set to hop provides no forward movement, all buttons produce a jump instead although I can't reproduce it, probably something to do with the swapping bug
     - jump and land animations do not play
     - mount plays fly animation in air when not flying
-    - can't adjust seat position, speeds, jump strength on mounts, likely others too but I didn't test all of them
-    - Test seat position rotation
-    - Glow layer support emissive (done?)
+    - can't adjust seat position, speeds, jump strength on mounts
      */
     public static final CreativeModeTab CREATIVE_MODE_TAB = new CreativeModeTab(CreativeModeTab.getGroupCountSafe(), "mountables2.ctab") {
         @Override
@@ -147,6 +143,7 @@ public class Mountables2Mod {
         PacketHandler.init();
 
     }
+
 
     public static ResourceLocation rl(String s) {
         return new ResourceLocation(MODID, s);
