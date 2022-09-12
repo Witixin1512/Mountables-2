@@ -341,11 +341,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
                     this.playerJumpPendingScale = 0.0F;
                 } else if (this.onGround && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && (f != 0 || f1 != 0)){
-                    if (hopTimer >= 3){
-                        hopTimer = 0;
-                        super.travel(doSlimeJump((float) f1, 1, 1));
-                    }
-                    hopTimer++;
+                        makeHop(new Vec3(f1, 1, 1));
                 }
 
                 this.flyingSpeed = this.getSpeed() * 0.1F;
@@ -374,20 +370,24 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 this.setSpeed(speed);
                 this.flyingSpeed = 0.02F;
                 if (this.onGround && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && (travelVec.x != 0 || travelVec.z != 0)){
-                    if (hopTimer >= 5){
-                        doSlimeJump((float) travelVec.z, 0.5,0.2F);
-                        hopTimer = 0;
-                    }
-                    hopTimer++;
+                    makeHop(new Vec3(travelVec.z, 0.5,0.2F));
                 }
-
                 super.travel(travelVec);
             }
-
-
         }
     }
 
+    private void makeHop(Vec3 movement) {
+        hopTimer++;
+        if (hopTimer >= 10) {
+            hopTimer = 0;
+            super.travel(doSlimeJump((float) movement.x, (float) movement.y, (float) movement.z));
+        } else {
+            setSpeed(0.0f);
+            this.setDeltaMovement(Vec3.ZERO);
+            super.travel(Vec3.ZERO);
+        }
+    }
     private boolean isSlowOnLand(){
         return this.getGroundMode().matches(GROUND_MOVEMENT.SLOW_WALK.name()) || this.getWaterMode().matches(WATER_MOVEMENT.SWIM.name());
     }
