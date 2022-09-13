@@ -317,6 +317,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 }
 
                 boolean allowJump = (this.onGround && !this.isJumping());
+                double attributeHop = getMountableData().getAttributeValue(MountableData.AttributeMap.JUMP_STRENGTH);
                 if ((this.playerJumpPendingScale > 0.0F && allowJump)) {
                     this.justAirJumped = true;
                     double d0 = 0.65D * (double) this.playerJumpPendingScale * (double) this.getBlockJumpFactor();
@@ -326,8 +327,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                     } else {
                         d1 = d0;
                     }
-                    if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 *= 1.75;
-                    if (this.canMove3D() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 = 0.5;
+                    if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 *= 1 + attributeHop;//multiply by at least 1, or else you end up with divisions
+                    if (this.canMove3D() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 = attributeHop;
 
                     Vec3 vector3d = this.getDeltaMovement();
                     this.setDeltaMovement(vector3d.x, d1, vector3d.z);
@@ -337,13 +338,13 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                     if (f1 > 0.0F && this.getDeltaMovement().y <= 0.5) {
                         float f2 = Mth.sin(this.getYRot() * ((float) Math.PI / 180F));
                         float f3 = Mth.cos(this.getYRot() * ((float) Math.PI / 180F));
-                        float force = this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && canMove3D() ? 2 : 1;
-                        super.travel(this.getDeltaMovement().add((double) (-0.4F * f2 * this.playerJumpPendingScale * force), 0.0D, (double) (0.4F * f3 * this.playerJumpPendingScale * force)));
+                        float force = (float) attributeHop / (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && canMove3D() ? 1.0f : 2.0f);
+                        super.travel(this.getDeltaMovement().add((-0.4F * f2 * this.playerJumpPendingScale * force), 0.0D, (0.4F * f3 * this.playerJumpPendingScale * force)));
                     }
 
                     this.playerJumpPendingScale = 0.0F;
                 } else if (this.onGround && this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name()) && (f != 0 || f1 != 0)) {
-                    makeHop(new Vec3(f1, 1, 1));
+                    makeHop(new Vec3(f1, attributeHop, 1));
                 }
 
                 this.flyingSpeed = this.getSpeed() * 0.1F;
@@ -509,15 +510,12 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     private float getFlyingSpeed() {
-        return getMountableData().attributeMap().get("FLYING_SPEED").floatValue();
+        return (float) getMountableData().getAttributeValue(MountableData.AttributeMap.FLYING_SPEED);
     }
 
     @Override
     public float getSpeed() {
-        String mode = "MOVEMENT_SPEED";
-        if (!this.getFlightMode().equals(FLYING_MOVEMENT.NONE.name()) && this.isFlying)
-            mode = "FLYING_SPEED";
-        return getMountableData().attributeMap().get(mode).floatValue();
+        return (float) getMountableData().getAttributeValue(MountableData.AttributeMap.MOVEMENT_SPEED);
     }
 
     @Override
@@ -795,7 +793,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     protected void jumpFromGround() {
         double d0 = (double) this.getJumpPower() + this.getJumpBoostPower();
         Vec3 vec3 = this.getDeltaMovement();
-        this.setDeltaMovement(vec3.x, 2, vec3.z);
+        this.setDeltaMovement(vec3.x, d0 * getMountableData().getAttributeValue(MountableData.AttributeMap.JUMP_STRENGTH), vec3.z);
         this.hasImpulse = true;
         net.minecraftforge.common.ForgeHooks.onLivingJump(this);
     }
