@@ -419,9 +419,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.entityData.define(ENTITY_HEIGHT, 1.0f);
     }
 
-    private float getFlyingSpeed() {
-        return 0.55f;
-    }
 
     private Vec3 doSlimeJump(float f1, double yScale, double force) {
         double d1 = 0.8D * yScale;
@@ -509,6 +506,18 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             passenger.yBodyRot = this.yBodyRot;
         }
 
+    }
+
+    private float getFlyingSpeed() {
+        return getMountableData().attributeMap().get("FLYING_SPEED").floatValue();
+    }
+
+    @Override
+    public float getSpeed() {
+        String mode = "MOVEMENT_SPEED";
+        if (!this.getFlightMode().equals(FLYING_MOVEMENT.NONE.name()) && this.isFlying)
+            mode = "FLYING_SPEED";
+        return getMountableData().attributeMap().get(mode).floatValue();
     }
 
     @Override
