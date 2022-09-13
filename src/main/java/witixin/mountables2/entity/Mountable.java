@@ -320,18 +320,18 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
                 double attributeHop = getMountableData().getAttributeValue(MountableData.AttributeMap.JUMP_STRENGTH);
                 if ((this.playerJumpPendingScale > 0.0F && allowJump)) {
                     this.justAirJumped = true;
-                    double d0 = 0.65D * (double) this.playerJumpPendingScale * (double) this.getBlockJumpFactor();
-                    double d1;
+                    double jumpDelta = 0.65D * (double) this.playerJumpPendingScale * (double) this.getBlockJumpFactor();
+                    double jumpForce;
                     if (this.hasEffect(MobEffects.JUMP)) {
-                        d1 = d0 + (double) ((float) (this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
+                        jumpForce = jumpDelta + (double) ((float) (this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
                     } else {
-                        d1 = d0;
+                        jumpForce = jumpDelta;
                     }
-                    if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 *= 1 + attributeHop;//multiply by at least 1, or else you end up with divisions
-                    if (this.canMove3D() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) d1 = attributeHop;
+                    if (this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) jumpForce *= 1 + attributeHop;//multiply by at least 1, or else you end up with divisions
+                    if (this.canMove3D() && !this.getGroundMode().matches(GROUND_MOVEMENT.HOP.name())) jumpForce = attributeHop/2f;
 
                     Vec3 vector3d = this.getDeltaMovement();
-                    this.setDeltaMovement(vector3d.x, d1, vector3d.z);
+                    this.setDeltaMovement(vector3d.x, jumpForce*attributeHop, vector3d.z);
                     this.setIsJumping(true);
                     this.hasImpulse = true;
                     ForgeHooks.onLivingJump(this);
