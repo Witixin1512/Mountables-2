@@ -3,7 +3,7 @@ package witixin.mountables2.client;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import witixin.mountables2.Mountables2Mod;
-import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.newmountable.Mountable;
 
 public class MountableModel extends AnimatedGeoModel<Mountable> {
     @Override

@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
-import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.newmountable.Mountable;
 
 public class MountableRenderer extends GeoEntityRenderer<Mountable> {
     public MountableRenderer(EntityRendererProvider.Context renderManager) {

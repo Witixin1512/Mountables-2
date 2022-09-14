@@ -21,11 +21,10 @@ public class FileUtils {
      * This code was taken from the ContentTweaker mod.
      */
 
-    public static void createPackFromTypeIfNotExists(PackType type){
-        if (type == PackType.CLIENT_RESOURCES){
+    public static void createPackFromTypeIfNotExists(PackType type) {
+        if (type == PackType.CLIENT_RESOURCES) {
             createResourcePackIfNotExists();
-        }
-        else {
+        } else {
             createDataPackIfNotExists();
         }
     }
@@ -51,60 +50,12 @@ public class FileUtils {
         createDirectoryIfNotExists(mountablesFolder);
         File companionBlock = new File(mountablesFolder, "" +
                 "companion_block.json");
-        if(!companionBlock.exists() && companionBlock.getParentFile().listFiles().length == 0) {
-            try(final PrintWriter writer = new PrintWriter(new FileWriter(companionBlock))) {
-                String toWrite = TemplateFile.read(PackType.SERVER_DATA,Mountables2Mod.rl("companion_block"));
+        if (!companionBlock.exists() && companionBlock.getParentFile().listFiles().length == 0) {
+            try (final PrintWriter writer = new PrintWriter(new FileWriter(companionBlock))) {
+                String toWrite = TemplateFile.read(PackType.SERVER_DATA, Mountables2Mod.rl("companion_block"));
                 if (toWrite == null || toWrite.isBlank()) throw new RuntimeException("Something went wrong with mountables2 file handling!");
                 writer.println(toWrite);
-            } catch(IOException ignored) {
-            }
-        }
-    }
-
-    private static void createDirectoryIfNotExists(File directory) {
-        if(!directory.exists()) {
-            try {
-                Files.createDirectories(directory.toPath());
-            } catch(IOException ignored) {
-            }
-        }
-    }
-    private static void createSoundsFile(File rootDir){
-        final TemplateFile templateFile = TemplateFile.of(PackType.SERVER_DATA, new ResourceLocation(Mountables2Mod.MODID, "sounds"));
-        List<String> contentStrings = new ArrayList<>();
-        for (File f : Objects.requireNonNull(rootDir.listFiles())){
-            if (f.getName().contains(".ogg")){
-                final String fileName = f.getName().split("\\.")[0];
-                TemplateFile toManipulate = templateFile.copy();
-                toManipulate.setValue("SOUND_TEMPLATE", fileName);
-                toManipulate.setValue("RESOURCELOCATION", Mountables2Mod.MODID + ":" + fileName);
-                contentStrings.add(toManipulate.getContent());
-            }
-        }
-        File toCheck = new File(rootDir.getParentFile(), "sounds.json");
-        if (toCheck.exists())return;
-        try(final PrintWriter writer = new PrintWriter(new FileWriter(toCheck))) {
-            String content = "{\n";
-            content = content.concat("    \"empty\": {\n" +"        \"sounds\" : [\"mountables2:empty\"]\n" +"    }");
-            for (int i = 0; i < contentStrings.size(); i++){
-                content = content.concat(",\n");
-                String toAdjoin = contentStrings.get(i);
-                content = content.concat("   " + toAdjoin);
-            }
-            content = content.concat("   \n}");
-            writer.println(content);
-        } catch(IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static void writeIfNotExists(File f, PackType type, ResourceLocation toRead) {
-        if(!f.exists()) {
-            try(final PrintWriter writer = new PrintWriter(new FileWriter(f))) {
-                String toWrite = TemplateFile.read(type, toRead);
-                if (toWrite == null || toWrite.isBlank()) throw new RuntimeException("Something went wrong with mountables2 file handling!");
-                writer.println(toWrite);
-            } catch(IOException ignored) {
+            } catch (IOException ignored) {
             }
         }
     }
@@ -116,8 +67,57 @@ public class FileUtils {
      * @return A File that may or may not exist.
      */
 
-    public static File getConfigMountableFolder(String folder){
+    public static File getConfigMountableFolder(String folder) {
         return FMLPaths.CONFIGDIR.get().resolve("mountables2/" + folder + "pack/" + folder + "/mountables2").toFile();
+    }
+
+    private static void createDirectoryIfNotExists(File directory) {
+        if (!directory.exists()) {
+            try {
+                Files.createDirectories(directory.toPath());
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private static void createSoundsFile(File rootDir) {
+        final TemplateFile templateFile = TemplateFile.of(PackType.SERVER_DATA, new ResourceLocation(Mountables2Mod.MODID, "sounds"));
+        List<String> contentStrings = new ArrayList<>();
+        for (File f : Objects.requireNonNull(rootDir.listFiles())) {
+            if (f.getName().contains(".ogg")) {
+                final String fileName = f.getName().split("\\.")[0];
+                TemplateFile toManipulate = templateFile.copy();
+                toManipulate.setValue("SOUND_TEMPLATE", fileName);
+                toManipulate.setValue("RESOURCELOCATION", Mountables2Mod.MODID + ":" + fileName);
+                contentStrings.add(toManipulate.getContent());
+            }
+        }
+        File toCheck = new File(rootDir.getParentFile(), "sounds.json");
+        if (toCheck.exists()) return;
+        try (final PrintWriter writer = new PrintWriter(new FileWriter(toCheck))) {
+            String content = "{\n";
+            content = content.concat("    \"empty\": {\n" + "        \"sounds\" : [\"mountables2:empty\"]\n" + "    }");
+            for (int i = 0; i < contentStrings.size(); i++) {
+                content = content.concat(",\n");
+                String toAdjoin = contentStrings.get(i);
+                content = content.concat("   " + toAdjoin);
+            }
+            content = content.concat("   \n}");
+            writer.println(content);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void writeIfNotExists(File f, PackType type, ResourceLocation toRead) {
+        if (!f.exists()) {
+            try (final PrintWriter writer = new PrintWriter(new FileWriter(f))) {
+                String toWrite = TemplateFile.read(type, toRead);
+                if (toWrite == null || toWrite.isBlank()) throw new RuntimeException("Something went wrong with mountables2 file handling!");
+                writer.println(toWrite);
+            } catch (IOException ignored) {
+            }
+        }
     }
 
 }

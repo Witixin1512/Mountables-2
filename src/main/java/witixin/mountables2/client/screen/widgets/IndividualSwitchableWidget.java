@@ -13,18 +13,22 @@ public class IndividualSwitchableWidget extends SwitchableWidget {
 
 
     public IndividualSwitchableWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation off, ResourceLocation on, String name, boolean isWater, UUID uuid, boolean selected) {
-        super(pX, pY, pWidth, pHeight, off, on, name, name);
+        super(pX, pY, pWidth, pHeight, name, name, pButton -> {
+        });
         this.trackedID = uuid;
         this.isWater = isWater;
         this.setEnabled(selected);
     }
-    public void sendPacket(){
+
+    public void sendPacket() {
         PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFreePacket(trackedID, isWater, this.isEnabled()));
     }
-    public boolean isWater(){
+
+    public boolean isWater() {
         return isWater;
     }
-    UUID getID(){
+
+    UUID getID() {
         return trackedID;
     }
 }
