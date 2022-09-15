@@ -32,4 +32,11 @@ public class LinkedArrowWidget extends AbstractWidget {
     public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
 
     }
+
+    @Override
+    public void onClick(double pMouseX, double pMouseY) {
+        super.onClick(pMouseX, pMouseY);
+        right.onClick(pMouseX, pMouseY);
+        left.onClick(pMouseX, pMouseY);
+    }
 }

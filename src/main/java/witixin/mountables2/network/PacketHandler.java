@@ -17,6 +17,7 @@ public class PacketHandler {
     private static int counter = 0;
 
     public static void init() {
+        INSTANCE.registerMessage(counter++, ServerUpdateMinorMovement.class, ServerUpdateMinorMovement::encode, ServerUpdateMinorMovement::decode, ServerUpdateMinorMovement::handle);
         INSTANCE.registerMessage(counter++, ServerUpdateMountFollowTypePacket.class, ServerUpdateMountFollowTypePacket::encode, ServerUpdateMountFollowTypePacket::decode, ServerUpdateMountFollowTypePacket::handle);
         INSTANCE.registerMessage(counter++, ServerUpdateMountModelPacket.class, ServerUpdateMountModelPacket::encode, ServerUpdateMountModelPacket::decode, ServerUpdateMountModelPacket::handle);
         INSTANCE.registerMessage(counter++, ServerUpdateMountTexturePacket.class, ServerUpdateMountTexturePacket::encode, ServerUpdateMountTexturePacket::decode, ServerUpdateMountTexturePacket::handle);

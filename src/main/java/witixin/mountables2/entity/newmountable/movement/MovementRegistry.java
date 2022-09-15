@@ -1,5 +1,9 @@
 package witixin.mountables2.entity.newmountable.movement;
 
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.Vec3;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,13 +31,39 @@ public enum MovementRegistry {
     }
 
     public void load() {
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, (entity, type) -> {
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, (mount, travelVector, type) -> {
+            if (type == MountMovement.MovementType.REGULAR)
+                if (mount.getControllingPassenger() != null && mount.getControllingPassenger() instanceof LivingEntity living) {
+                    if (mount.isControlledByLocalInstance()) {
+                        mount.rotateBodyTo(living);
+                        float f = living.xxa * 0.5F;
+                        float f1 = living.zza;
+                        mount.setSpeed((float) mount.getAttributeValue(Attributes.MOVEMENT_SPEED));
+                        return new Vec3(f, travelVector.y, f1);
+                    }
+                }
+            return travelVector;
         }));
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, (entity, type) -> {
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, (mount, travelVector, type) -> {
+            if (type == MountMovement.MovementType.ASCENDING)
+                if (mount.getControllingPassenger() != null && mount.getControllingPassenger() instanceof LivingEntity living) {
+                    if (mount.isControlledByLocalInstance()) {
+                        mount.rotateBodyTo(living);
+                        float xDelta = living.xxa * 0.5F;
+                        float zDelta = living.zza;
+                        float ascencion = 0.5f;
+
+                        mount.setSpeed((float) mount.getAttributeValue(Attributes.MOVEMENT_SPEED));
+                        return new Vec3(xDelta, travelVector.y, zDelta);
+                    }
+                }
+            return travelVector;
         }));
-        registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (entity, type) -> {
+        registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (mount, travelVector, type) -> {
+            return travelVector;
         }));
-        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (entity, type) -> {
+        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (mount, travelVector, type) -> {
+            return travelVector;
         }));
     }
 }

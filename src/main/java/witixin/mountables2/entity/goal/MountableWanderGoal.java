@@ -15,7 +15,6 @@ public class MountableWanderGoal extends RandomStrollGoal {
 
     @Override
     public boolean canUse() {
-//        return super.canUse() && mountable.getFollowMode().matches(Mountable.FOLLOW_TYPES.WANDER.name());
-        return true;
+        return super.canUse() && mountable.getFollowMode() == (Mountable.WANDER);
     }
 }

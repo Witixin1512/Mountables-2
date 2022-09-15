@@ -14,7 +14,6 @@ public class MountableFollowGoal extends FollowOwnerGoal {
 
     @Override
     public boolean canUse() {
-        // return super.canUse() && this.mountable.getFollowMode().matches(Mountable.FOLLOW_TYPES.FOLLOW.name());
-        return false;
+        return super.canUse() && mountable.getFollowMode() == (Mountable.FOLLOW);
     }
 }

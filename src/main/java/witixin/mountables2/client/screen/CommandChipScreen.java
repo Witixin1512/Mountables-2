@@ -1,15 +1,17 @@
 package witixin.mountables2.client.screen;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.client.screen.widgets.ArrowSelectionWidget;
+import witixin.mountables2.client.screen.widgets.LinkedArrowWidget;
 import witixin.mountables2.client.screen.widgets.LinkedSwitchableWidget;
 import witixin.mountables2.client.screen.widgets.SwitchableWidget;
 import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.network.PacketHandler;
+import witixin.mountables2.network.server.ServerUpdateMountFollowTypePacket;
 
 public class CommandChipScreen extends Screen {
 
@@ -23,7 +25,6 @@ public class CommandChipScreen extends Screen {
         this.entityId = mountId;
     }
 
-
     @Override
     protected void init() {
         super.init();
@@ -31,34 +32,47 @@ public class CommandChipScreen extends Screen {
             this.mount = mount;
         else throw new NullPointerException("given entity was not a mount !");
 
+        if (this instanceof MountableAIScreen)
+            return;//prevent drawing all the other buttons from the mountable ai screen which extends this class
+
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
 
-        final ArrowSelectionWidget MODEL_LEFT = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
-        final ArrowSelectionWidget MODEL_RIGHT = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
+        ArrowSelectionWidget arrowLeftModel = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
+        ArrowSelectionWidget arrowRightModel = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
 
-        final ArrowSelectionWidget TEXTURE_LEFT = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
-        final ArrowSelectionWidget TEXTURE_RIGHT = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
+        ArrowSelectionWidget arrowLeftTex = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
+        ArrowSelectionWidget arrowRightTex = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
 
 
-        //TODO fix follow buttons
-        final SwitchableWidget WANDER = new SwitchableWidget(0, 40, 100, 20, I18n.get("gui.mountables2.chip.wander"), "wander", pButton -> {
+        final SwitchableWidget WANDER = new SwitchableWidget(0, 0, 100, 20, I18n.get("gui.mountables2.chip.wander"), "wander", pButton -> {
+            PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.WANDER));
+            mount.setFollowMode(Mountable.WANDER);
         });
-        final SwitchableWidget STAY = new SwitchableWidget(0, 80, 100, 20, I18n.get("gui.mountables2.chip.stay"), "stay", pButton -> {
+        final SwitchableWidget STAY = new SwitchableWidget(0, 40, 100, 20, I18n.get("gui.mountables2.chip.stay"), "stay", pButton -> {
+            PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.STAY));
+            mount.setFollowMode(Mountable.STAY);
         });
-        final SwitchableWidget FOLLOW = new SwitchableWidget(0, 120, 100, 20, I18n.get("gui.mountables2.chip.follow"), "follow", pButton -> {
+        final SwitchableWidget FOLLOW = new SwitchableWidget(0, 80, 100, 20, I18n.get("gui.mountables2.chip.follow"), "follow", pButton -> {
+            PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.FOLLOW));
+            mount.setFollowMode(Mountable.FOLLOW);
         });
 
+        SwitchableWidget[] selectable = new SwitchableWidget[3];
+        selectable[Mountable.FOLLOW] = FOLLOW;
+        selectable[Mountable.WANDER] = WANDER;
+        selectable[Mountable.STAY] = STAY;
 
-        this.addRenderableWidget(new LinkedSwitchableWidget((posX - 128) / 2 + 10, (posY - 256) / 2, 40, 40, ".*", WANDER, STAY, FOLLOW));
+        this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - 50, posY / 2 - 100 , 100, 35 * selectable.length, mount.getFollowMode(), selectable));
 
-//        if (!mount.getLockSwitch()) {
-//            this.addRenderableWidget(new LinkedArrowWidget((posX - 128) / 2 + 10, (posY - 256) / 2 + 160, 40, 40, MODEL_LEFT, MODEL_RIGHT, I18n.get("gui.mountables2.chip.model")));
-//        }
-//
-//        this.addRenderableWidget(new LinkedArrowWidget((posX - 128) / 2 + 10, (posY - 256) / 2 + 180 - (mount.getLockSwitch() ? 20 : 0), 300, 60, TEXTURE_LEFT, TEXTURE_RIGHT, I18n.get("gui.mountables2.chip.texture")));
+        //TODO add function to arrow keys
+        if (!mount.getLockSwitch()) {
+            this.addRenderableWidget(new LinkedArrowWidget(posX / 2 - 50, posY / 2 + 40, 100, 16, arrowLeftModel, arrowRightModel, I18n.get("gui.mountables2.chip.model")));
+        }
 
-        this.addRenderableWidget(new SwitchableWidget(((posX - 128) / 2 + 10), (posY - 256) / 2 + 200, 100, 20, I18n.get("gui.mountables2.ai.ai"), "AI", pButton -> {
+        this.addRenderableWidget(new LinkedArrowWidget(posX / 2 - 50, posY / 2 + (mount.getLockSwitch() ? 30 : 20), 100, 16, arrowLeftTex, arrowRightTex, I18n.get("gui.mountables2.chip.texture")));
+
+        this.addRenderableWidget(new SwitchableWidget(posX / 2 - 50, (posY - 256) / 2 + 200, 100, 20, I18n.get("gui.mountables2.ai.ai"), "AI", pButton -> {
             minecraft.setScreen(new MountableAIScreen(entityId));
         }));
     }
@@ -67,20 +81,4 @@ public class CommandChipScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    @Override
-    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-//        if (this.getTitle().getString().matches("commandchipscreen") && AI_WIDGET != null && AI_WIDGET.mouseClicked(pMouseX, pMouseY, pButton)) {
-//            PacketHandler.INSTANCE.sendToServer(new ServerRequestMountableInfoPacket(trackedMountable));
-//            Minecraft.getInstance().setScreen(new MountableAIScreen(new MountableInfo(trackedMountable, followMode, NON_RIDER_MODE, GROUND_MODE, WATER_MODE, FLYING_MODE, waterState, flightState, canSwim, canWalk, canFly, lockSwitch)));
-//            return true;
-//        }
-        return super.mouseClicked(pMouseX, pMouseY, pButton);
-    }
-
-    @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-        super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-    }
-
 }
