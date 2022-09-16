@@ -57,9 +57,11 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public static final byte STAY = 2;
 
     private final AnimationFactory factory = new AnimationFactory(this);
+    public float playerJumpPendingScale;
     private MountableData mountableData;
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
     private boolean lockSwitch;
+    private boolean isJumping = false;
 
     public Mountable(EntityType type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
@@ -71,6 +73,37 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
 //        this.goalSelector.addGoal(1, new MountableFloatGoal(this));
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.isInWaterOrBubble() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM)))) {
+            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM));
+        } else if (this.isOnGround() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK)))) {
+            if (this.isFlying())
+                this.setFlying(false);
+            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK));
+        } else if (this.isFlying() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY)))) {
+            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY));
+        }
+    }
+
+    public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
+        return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
+    }
+
+    public boolean isFlying() {
+        return this.entityData.get(AIRBOURNE);
+    }
+
+    public void setFlying(boolean flag) {
+        this.entityData.set(AIRBOURNE, flag);
+    }
+
+    @Override
+    public boolean canBeControlledByRider() {
+        return true;
     }
 
     public String getEmissiveTexture() {
@@ -138,12 +171,12 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         return getMountableData().aiModes()[MountableManager.FLY];
     }
 
-    public void setFollowMode(byte followMode) {
-        this.entityData.set(FOLLOW_MODE, followMode);
-    }
-
     public byte getFollowMode() {
         return this.entityData.get(FOLLOW_MODE);
+    }
+
+    public void setFollowMode(byte followMode) {
+        this.entityData.set(FOLLOW_MODE, followMode);
     }
 
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
@@ -177,8 +210,13 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pPose) {
-        return EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
+    public void travel(Vec3 pTravelVector) {
+
+        Vec3 newvector;
+
+        newvector = currentTravelMethod.getMovement().travel(this, pTravelVector, MountMovement.MovementType.REGULAR);
+
+        super.travel(newvector);
     }
 
     public boolean canWalk() {
@@ -203,33 +241,29 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         super.onSyncedDataUpdated(pKey);
     }
 
-    protected float playerJumpPendingScale;
-
     @Override
     public void onPlayerJump(int pJumpPower) {
-        if (!this.onGround && this.canFly()) //double jump to start flying
-            setFlying(true);
-        if (ascend) {
-            ;
-        } else if (pJumpPower >= 90) {
+        if (pJumpPower >= 90) {
             this.playerJumpPendingScale = 1.0F;
         } else {
             this.playerJumpPendingScale = 0.4F + 0.4F * (float) pJumpPower / 90.0F;
         }
-        //currentTravelMethod.getMovement().travel(this, null, MountMovement.MovementType.SPACEBAR_PRESSED);//TODO
     }
 
     @Override
-    public void travel(Vec3 pTravelVector) {
-        Vec3 newvector;
+    public boolean canJump() {
+        return !currentTravelMethod.getMinor().equals(MountTravel.Minor.SINK);
+    }
 
-        if (ascend)
-            newvector = currentTravelMethod.getMovement().travel(this, pTravelVector, MountMovement.MovementType.ASCENDING);
-        else
-            newvector = currentTravelMethod.getMovement().travel(this, pTravelVector, MountMovement.MovementType.REGULAR);
+    @Override
+    public void handleStartJump(int pJumpPower) {
 
-        super.travel(newvector);
-        ascend = false;
+
+    }
+
+    @Override
+    public void handleStopJump() {
+
     }
 
     public void rotateBodyTo(LivingEntity rider) {
@@ -241,37 +275,24 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         this.yHeadRot = this.yBodyRot;
     }
 
-    @Override
-    public boolean canJump() {
-        return !currentTravelMethod.getMinor().equals(MountTravel.Minor.SINK);
-    }
-
-    private boolean ascend = false;
-
-    @Override
-    public void handleStartJump(int pJumpPower) {
-        if (isFlying())
-            ascend = true;
-
+    public boolean isJumping() {
+        return isJumping;
     }
 
     @Override
-    public void handleStopJump() {
+    public void setJumping(boolean jumping) {
+        isJumping = jumping;
+    }
 
+    @Override
+    public EntityDimensions getDimensions(Pose pPose) {
+        return EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
     }
 
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(new AnimationController<>(this, "controller", 5, this::predicate));
 
-    }
-
-    public boolean isFlying() {
-        return this.entityData.get(AIRBOURNE);
-    }
-
-    public void setFlying(boolean flag) {
-        this.entityData.set(AIRBOURNE, flag);
     }
 
     private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
@@ -363,34 +384,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         };
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.isInWaterOrBubble() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM)))) {
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM));
-        } else if (this.isOnGround() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK)))) {
-            if (this.isFlying())
-                this.setFlying(false);
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK));
-        } else if (this.isFlying() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY)))) {
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY));
-        }
-    }
-
-    public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
-        return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
-    }
-
     public boolean getLockSwitch() {
         return lockSwitch;
-    }
-
-    public boolean isLockSwitch() {
-        return lockSwitch;
-    }
-
-    @Override
-    public boolean canBeControlledByRider() {
-        return true;
     }
 }
