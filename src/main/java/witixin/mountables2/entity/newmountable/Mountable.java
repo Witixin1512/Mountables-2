@@ -72,12 +72,14 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     protected void registerGoals() {
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
+        //Is this handled in movement I assume then?
 //        this.goalSelector.addGoal(1, new MountableFloatGoal(this));
     }
 
     @Override
     public void tick() {
         super.tick();
+        //This looks much cleaner, let me check the travel method
         if (this.isInWaterOrBubble() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM)))) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM));
         } else if (this.isOnGround() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK)))) {
@@ -90,6 +92,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
+        //This method works in both sides, neat
         return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
     }
 
@@ -150,6 +153,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     }
 
     //what does this do ? //TODO check for functionality
+    //This should def be moved to something that doesnt use reflection really...
     private void processAttributes(Map<String, Double> dataAttributeMap) {
         for (Map.Entry<String, Double> entry : dataAttributeMap.entrySet()) {
             try {
@@ -213,9 +217,8 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public void travel(Vec3 pTravelVector) {
 
         Vec3 newvector;
-
+        //I understand the need to move the logic to another class but maybe have the base logic handled here? eg, if is alive, is vehicle, etc
         newvector = currentTravelMethod.getMovement().travel(this, pTravelVector, MountMovement.MovementType.REGULAR);
-
         super.travel(newvector);
     }
 
@@ -240,6 +243,11 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         }
         super.onSyncedDataUpdated(pKey);
     }
+
+
+    /**
+     * At this point, probably better to remove {@link PlayerRideableJumping} from the mob altogether and have a class with {@link net.minecraftforge.event.TickEvent.ClientTickEvent} that handles movement through packets...
+     */
 
     @Override
     public void onPlayerJump(int pJumpPower) {
@@ -338,6 +346,7 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
         super.addAdditionalSaveData(tag);
         tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
         tag.putInt("emissive_texture", getEmissiveTextureIndex());
+        //Why is model position commented out?
 //        tag.putInt("model_position", getModelPosition());
         tag.putBoolean("flying", this.entityData.get(AIRBOURNE));
         tag.putString("minor_fly", this.entityData.get(MINOR_MOVEMENT_FLY));

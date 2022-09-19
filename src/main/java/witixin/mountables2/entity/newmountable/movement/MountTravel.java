@@ -7,6 +7,8 @@ public class MountTravel {
     private final Minor minor;
     private final MountMovement movement;
 
+    //Why not make this a record?
+
     public MountTravel(Major major, Minor minor, MountMovement movement) {
         this.major = major;
         this.movement = movement;

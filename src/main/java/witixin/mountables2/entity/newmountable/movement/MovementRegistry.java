@@ -36,7 +36,7 @@ public enum MovementRegistry {
         }));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, (mount, travelVector, type) ->
-
+            //Why are those not direct lambdas?
         {
 
             return travelVector;
