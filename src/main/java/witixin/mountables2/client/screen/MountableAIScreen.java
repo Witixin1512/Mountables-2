@@ -42,13 +42,13 @@ public class MountableAIScreen extends CommandChipScreen {
                 SwitchableWidget widget = new SwitchableWidget(
                         0, 50 + (30 * row), //position
                         80, 20, //size
-                        I18n.get(String.format("gui.mountables2.ai.%s", travel.getMinor().name().toLowerCase())),
-                        travel.getMinor().name(),
+                        I18n.get(String.format("gui.mountables2.ai.%s", travel.minor().name().toLowerCase())),
+                        travel.minor().name(),
                         pButton -> {
-                            this.mount.setMinorMovement(travel.getMajor(), travel.getMinor());
-                            PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.getMajor(), travel.getMinor()));
+                            this.mount.setMinorMovement(travel.major(), travel.minor());
+                            PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.major(), travel.minor()));
                         });
-                widget.setEnabled(mount.getMinorMovement(major).equals(travel.getMinor()));//enable widget if the set minor is the one from the widget
+                widget.setEnabled(mount.getMinorMovement(major).equals(travel.minor()));//enable widget if the set minor is the one from the widget
                 minors.add(widget);
                 row++;
             }

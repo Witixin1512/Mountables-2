@@ -2,18 +2,7 @@ package witixin.mountables2.entity.newmountable.movement;
 
 import java.util.Objects;
 
-public class MountTravel {
-    private final Major major;
-    private final Minor minor;
-    private final MountMovement movement;
-
-    //Why not make this a record?
-
-    public MountTravel(Major major, Minor minor, MountMovement movement) {
-        this.major = major;
-        this.movement = movement;
-        this.minor = minor;
-    }
+public record MountTravel(witixin.mountables2.entity.newmountable.movement.MountTravel.Major major, witixin.mountables2.entity.newmountable.movement.MountTravel.Minor minor, MountMovement movement) {
 
     public static Minor from(String name) {
         try {
@@ -21,18 +10,6 @@ public class MountTravel {
         } catch (IllegalArgumentException e) {
             return Minor.NONE;
         }
-    }
-
-    public Major getMajor() {
-        return major;
-    }
-
-    public Minor getMinor() {
-        return minor;
-    }
-
-    public MountMovement getMovement() {
-        return movement;
     }
 
     @Override

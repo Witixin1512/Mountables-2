@@ -24,6 +24,7 @@ public class PacketHandler {
         INSTANCE.registerMessage(counter++, ServerUpdateMountAIPacket.class, ServerUpdateMountAIPacket::encode, ServerUpdateMountAIPacket::decode, ServerUpdateMountAIPacket::handle);
         INSTANCE.registerMessage(counter++, ServerUpdateMountFreePacket.class, ServerUpdateMountFreePacket::encode, ServerUpdateMountFreePacket::decode, ServerUpdateMountFreePacket::handle);
         INSTANCE.registerMessage(counter++, ServerRequestMountableInfoPacket.class, ServerRequestMountableInfoPacket::encode, ServerRequestMountableInfoPacket::decode, ServerRequestMountableInfoPacket::handle);
+        INSTANCE.registerMessage(counter++, ServerHandleKeyPressMovement.class, ServerHandleKeyPressMovement::encode, ServerHandleKeyPressMovement::new, ServerHandleKeyPressMovement::handle);
     }
 
 }

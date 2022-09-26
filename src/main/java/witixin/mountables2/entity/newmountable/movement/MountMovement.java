@@ -5,10 +5,6 @@ import witixin.mountables2.entity.newmountable.Mountable;
 
 public interface MountMovement {
 
-    Vec3 travel(Mountable entity, Vec3 travelVector, MovementType type);
+    Vec3 travel(Mountable entity, Vec3 travelVector);
 
-    enum MovementType {
-        ASCENDING,
-        REGULAR
-    }
 }

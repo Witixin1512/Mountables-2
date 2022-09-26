@@ -1,6 +1,5 @@
 package witixin.mountables2.entity.newmountable;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -8,6 +7,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -15,7 +15,6 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -27,20 +26,21 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
+import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.client.screen.CommandChipScreen;
 import witixin.mountables2.data.MountableData;
 import witixin.mountables2.data.MountableManager;
 import witixin.mountables2.entity.goal.MountableFollowGoal;
 import witixin.mountables2.entity.goal.MountableWanderGoal;
-import witixin.mountables2.entity.newmountable.movement.MountMovement;
+import witixin.mountables2.entity.newmountable.movement.KeyStrokeMovement;
 import witixin.mountables2.entity.newmountable.movement.MountTravel;
 import witixin.mountables2.entity.newmountable.movement.MovementRegistry;
 
 import java.util.List;
 import java.util.Map;
 
-public class Mountable extends TamableAnimal implements IAnimatable, PlayerRideableJumping {
+public class Mountable extends TamableAnimal implements IAnimatable {
 
     public static final EntityDataAccessor<Float> ENTITY_WIDTH = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<Float> ENTITY_HEIGHT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
@@ -57,11 +57,11 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     public static final byte STAY = 2;
 
     private final AnimationFactory factory = new AnimationFactory(this);
-    public float playerJumpPendingScale;
     private MountableData mountableData;
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
     private boolean lockSwitch;
     private boolean isJumping = false;
+    private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
 
     public Mountable(EntityType type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
@@ -79,20 +79,17 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     @Override
     public void tick() {
         super.tick();
-        //This looks much cleaner, let me check the travel method
-        if (this.isInWaterOrBubble() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM)))) {
+        if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM));
-        } else if (this.isOnGround() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK)))) {
-            if (this.isFlying())
-                this.setFlying(false);
+        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK));
-        } else if (this.isFlying() && !currentTravelMethod.equals(MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY)))) {
+            if (this.isFlying()) setFlying(false);//walk when landing
+        } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY));
         }
     }
 
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
-        //This method works in both sides, neat
         return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
     }
 
@@ -162,7 +159,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             } catch (IllegalAccessException | NullPointerException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
@@ -185,25 +181,23 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
 
-
-        ItemStack itemstack = pPlayer.getItemInHand(pHand);
-        if (!pPlayer.level.isClientSide && pPlayer.isShiftKeyDown() && this.getOwnerUUID().equals(pPlayer.getUUID())) {
-            this.remove(RemovalReason.DISCARDED);
-            //TODO this.dropMountableItem();
-            return InteractionResult.SUCCESS;
-        }
-        if (itemstack.getItem().equals(Mountables2Mod.COMMAND_CHIP.get()) && pPlayer.level.isClientSide && this.getOwnerUUID().equals(pPlayer.getUUID())) {
-            Minecraft.getInstance().setScreen(new CommandChipScreen(getId()));
-            //TODO open safe without minecraft call
-            return InteractionResult.sidedSuccess(true);
-        }
-        if (!this.isVehicle() && !pPlayer.level.isClientSide && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
-            if (!this.level.isClientSide) {
-                pPlayer.setYRot(this.getYRot());
-                pPlayer.setXRot(this.getXRot());
-                pPlayer.startRiding(this);
+        if (!pPlayer.level.isClientSide) {
+            if (pPlayer.isShiftKeyDown() && pPlayer.getUUID().equals(getOwnerUUID())) {
+                this.remove(RemovalReason.DISCARDED);
+                //TODO this.dropMountableItem();
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
+            if (!this.isVehicle() && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
+                if (!this.level.isClientSide) {
+                    pPlayer.setYRot(this.getYRot());
+                    pPlayer.setXRot(this.getXRot());
+                    pPlayer.startRiding(this);
+                }
+                return InteractionResult.SUCCESS;
+            }
+        } else if (pPlayer.getItemInHand(pHand).getItem().equals(Mountables2Mod.COMMAND_CHIP.get()) && pPlayer.getUUID().equals(getOwnerUUID())) {
+            ClientReferences.open(new CommandChipScreen(getId()));
+            return InteractionResult.sidedSuccess(true);
         }
 
         return super.mobInteract(pPlayer, pHand);
@@ -215,10 +209,44 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     @Override
     public void travel(Vec3 pTravelVector) {
+        Vec3 newvector = pTravelVector;
 
-        Vec3 newvector;
-        //I understand the need to move the logic to another class but maybe have the base logic handled here? eg, if is alive, is vehicle, etc
-        newvector = currentTravelMethod.getMovement().travel(this, pTravelVector, MountMovement.MovementType.REGULAR);
+        if (isAlive()) {
+
+            if (isVehicle() && canBeControlledByRider() && getFirstPassenger() instanceof LivingEntity rider) {
+                rotateBodyTo(rider);
+                if (keyStrokeMovement != null) {
+                    double deltaX = 0, deltaY = 0, deltaZ = 0;
+                    double rotation = this.getYRot() * (Mth.PI / 180F);
+
+                    double speed = getMountableData().getAttributeValue(MountableData.AttributeMap.MOVEMENT_SPEED);
+
+                    if (isFlying())
+                        speed = getMountableData().getAttributeValue(MountableData.AttributeMap.FLYING_SPEED);
+
+                    //Set slow speed modifier last
+                    if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
+                        speed /= 2.0d;
+
+                    double sideWaysFactor = 0.60;//about two thirds of frontal movement
+                    double inverseX = keyStrokeMovement.up() && !keyStrokeMovement.down() ? 1 : -1;
+                    double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
+                    if (getKeyStrokeMovement().isFrontal())
+                        deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * sideWaysFactor : speed) * inverseX;
+                    if (getKeyStrokeMovement().isLateral())
+                        deltaZ = (keyStrokeMovement.isPurelyFrontal() ? speed * sideWaysFactor : speed) * inverseZ;
+
+                    double sinXRot = Math.sin(-rotation) * deltaX;
+                    double cosXRot = Math.cos(rotation) * deltaX;
+                    double sinZRot = Math.sin(-rotation + Mth.PI / 2d) * deltaZ;
+                    double cosZRot = Math.cos(rotation - Mth.PI / 2d) * deltaZ;
+
+                    pTravelVector = new Vec3(sinXRot + sinZRot, deltaY, cosXRot + cosZRot);
+                }
+                newvector = currentTravelMethod.movement().travel(this, pTravelVector);
+            }
+        }
+        this.setDeltaMovement(this.getDeltaMovement().add(newvector));
         super.travel(newvector);
     }
 
@@ -242,36 +270,6 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
             this.refreshDimensions();
         }
         super.onSyncedDataUpdated(pKey);
-    }
-
-
-    /**
-     * At this point, probably better to remove {@link PlayerRideableJumping} from the mob altogether and have a class with {@link net.minecraftforge.event.TickEvent.ClientTickEvent} that handles movement through packets...
-     */
-
-    @Override
-    public void onPlayerJump(int pJumpPower) {
-        if (pJumpPower >= 90) {
-            this.playerJumpPendingScale = 1.0F;
-        } else {
-            this.playerJumpPendingScale = 0.4F + 0.4F * (float) pJumpPower / 90.0F;
-        }
-    }
-
-    @Override
-    public boolean canJump() {
-        return !currentTravelMethod.getMinor().equals(MountTravel.Minor.SINK);
-    }
-
-    @Override
-    public void handleStartJump(int pJumpPower) {
-
-
-    }
-
-    @Override
-    public void handleStopJump() {
-
     }
 
     public void rotateBodyTo(LivingEntity rider) {
@@ -306,12 +304,12 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
     private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         if (event.getAnimatable() instanceof Mountable mountable) {
             if (event.isMoving()) {
-                if (currentTravelMethod.getMajor().equals(MountTravel.Major.SWIM)) {
+                if (currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
                     event.getController().setAnimation(new AnimationBuilder().addAnimation("swim", true));
-                } else if (currentTravelMethod.getMajor().equals(MountTravel.Major.WALK)) {
+                } else if (currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
                     //TODO JUMP AND LAND
                     event.getController().setAnimation(new AnimationBuilder().addAnimation("walk", true));
-                } else if (currentTravelMethod.getMajor().equals(MountTravel.Major.FLY)) {
+                } else if (currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
                     event.getController().setAnimation(new AnimationBuilder().addAnimation("fly", true));
                 }
                 return PlayState.CONTINUE;
@@ -395,5 +393,13 @@ public class Mountable extends TamableAnimal implements IAnimatable, PlayerRidea
 
     public boolean getLockSwitch() {
         return lockSwitch;
+    }
+
+    public void setKeyStrokeMovement(KeyStrokeMovement keyStrokeMovement) {
+        this.keyStrokeMovement = keyStrokeMovement;
+    }
+
+    public KeyStrokeMovement getKeyStrokeMovement() {
+        return keyStrokeMovement;
     }
 }
