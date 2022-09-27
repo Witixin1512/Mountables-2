@@ -13,6 +13,10 @@ public record KeyStrokeMovement(boolean up, boolean down, boolean left, boolean 
         buf.writeBoolean(jump);
     }
 
+    public static KeyStrokeMovement decode(FriendlyByteBuf buf) {
+        return new KeyStrokeMovement(buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+    }
+
     public boolean isPurelyLateral() {
         return (left && !right) || (!left && right);
     }
@@ -29,9 +33,6 @@ public record KeyStrokeMovement(boolean up, boolean down, boolean left, boolean 
         return up || down;
     }
 
-    public static KeyStrokeMovement decode(FriendlyByteBuf buf) {
-        return new KeyStrokeMovement(buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
-    }
 
     @Override
     public String toString() {

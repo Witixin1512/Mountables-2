@@ -25,7 +25,7 @@ public class ClientEventListenToMovement {
 
             KeyStrokeMovement movement = new KeyStrokeMovement(up, down, left, right, jump);
 
-            if (mount.getKeyStrokeMovement() == null || !mount.getKeyStrokeMovement().equals(movement)) {
+            if (!mount.getKeyStrokeMovement().equals(movement)) {
                 mount.setKeyStrokeMovement(movement);
                 PacketHandler.INSTANCE.sendToServer(new ServerHandleKeyPressMovement(movement));
             }

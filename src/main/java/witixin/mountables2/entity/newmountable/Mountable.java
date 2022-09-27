@@ -60,8 +60,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     private MountableData mountableData;
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
     private boolean lockSwitch;
-    private boolean isJumping = false;
     private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
+    private boolean jumpOld = false;
 
     public Mountable(EntityType type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
@@ -215,34 +215,34 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
             if (isVehicle() && canBeControlledByRider() && getFirstPassenger() instanceof LivingEntity rider) {
                 rotateBodyTo(rider);
-                if (keyStrokeMovement != null) {
-                    double deltaX = 0, deltaY = 0, deltaZ = 0;
-                    double rotation = this.getYRot() * (Mth.PI / 180F);
+                /********************handle rotation and moving forward************************/
+                double deltaX = 0, deltaY = 0, deltaZ = 0;
+                double rotation = this.getYRot() * (Mth.PI / 180F);
 
-                    double speed = getMountableData().getAttributeValue(MountableData.AttributeMap.MOVEMENT_SPEED);
+                double speed = getMountableData().getAttributeValue(MountableData.AttributeMap.MOVEMENT_SPEED);
 
-                    if (isFlying())
-                        speed = getMountableData().getAttributeValue(MountableData.AttributeMap.FLYING_SPEED);
+                if (isFlying())
+                    speed = getMountableData().getAttributeValue(MountableData.AttributeMap.FLYING_SPEED);
 
-                    //Set slow speed modifier last
-                    if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
-                        speed /= 2.0d;
+                //Set slow speed modifier last
+                if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
+                    speed /= 2.0d;
 
-                    double sideWaysFactor = 0.60;//about two thirds of frontal movement
-                    double inverseX = keyStrokeMovement.up() && !keyStrokeMovement.down() ? 1 : -1;
-                    double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
-                    if (getKeyStrokeMovement().isFrontal())
-                        deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * sideWaysFactor : speed) * inverseX;
-                    if (getKeyStrokeMovement().isLateral())
-                        deltaZ = (keyStrokeMovement.isPurelyFrontal() ? speed * sideWaysFactor : speed) * inverseZ;
+                double sideWaysFactor = 0.60;//about two thirds of frontal movement
+                double inverseX = keyStrokeMovement.up() && !keyStrokeMovement.down() ? 1 : -1;
+                double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
+                if (getKeyStrokeMovement().isFrontal())
+                    deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * sideWaysFactor : speed) * inverseX;
+                if (getKeyStrokeMovement().isLateral())
+                    deltaZ = (keyStrokeMovement.isPurelyFrontal() ? speed * sideWaysFactor : speed) * inverseZ;
 
-                    double sinXRot = Math.sin(-rotation) * deltaX;
-                    double cosXRot = Math.cos(rotation) * deltaX;
-                    double sinZRot = Math.sin(-rotation + Mth.PI / 2d) * deltaZ;
-                    double cosZRot = Math.cos(rotation - Mth.PI / 2d) * deltaZ;
+                double sinXRot = Math.sin(-rotation) * deltaX;
+                double cosXRot = Math.cos(rotation) * deltaX;
+                double sinZRot = Math.sin(-rotation + Mth.PI / 2d) * deltaZ;
+                double cosZRot = Math.cos(rotation - Mth.PI / 2d) * deltaZ;
 
-                    pTravelVector = new Vec3(sinXRot + sinZRot, deltaY, cosXRot + cosZRot);
-                }
+                pTravelVector = new Vec3(sinXRot + sinZRot, deltaY, cosXRot + cosZRot);
+
                 newvector = currentTravelMethod.movement().travel(this, pTravelVector);
             }
         }
@@ -279,15 +279,6 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.setRot(this.getYRot(), this.getXRot());
         this.yBodyRot = this.getYRot();
         this.yHeadRot = this.yBodyRot;
-    }
-
-    public boolean isJumping() {
-        return isJumping;
-    }
-
-    @Override
-    public void setJumping(boolean jumping) {
-        isJumping = jumping;
     }
 
     @Override

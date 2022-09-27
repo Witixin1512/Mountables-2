@@ -27,16 +27,7 @@ public enum MovementRegistry {
     }
 
     public void load() {
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, (mount, travelVector) -> {
-            if (mount.canFly()) {
-                if (mount.getKeyStrokeMovement().jump()) {
-                    mount.hasImpulse = true;
-                    travelVector = travelVector.add(0, 0.1f, 0);
-                    mount.setFlying(true);
-                }
-            }
-            return travelVector;
-        }));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkNoneTravel()));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, (mount, travelVector) ->
         {
@@ -56,6 +47,7 @@ public enum MovementRegistry {
         }));
 
         registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (mount, travelVector) ->
+
         {
             return travelVector;
         }));
