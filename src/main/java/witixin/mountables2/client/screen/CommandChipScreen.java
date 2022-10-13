@@ -9,7 +9,7 @@ import witixin.mountables2.client.screen.widgets.ArrowSelectionWidget;
 import witixin.mountables2.client.screen.widgets.LinkedArrowWidget;
 import witixin.mountables2.client.screen.widgets.LinkedSwitchableWidget;
 import witixin.mountables2.client.screen.widgets.SwitchableWidget;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.network.PacketHandler;
 import witixin.mountables2.network.server.ServerUpdateMountFollowTypePacket;
 

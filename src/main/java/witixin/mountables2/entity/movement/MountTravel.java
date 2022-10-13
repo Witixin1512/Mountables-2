@@ -1,4 +1,4 @@
-package witixin.mountables2.entity.newmountable.movement;
+package witixin.mountables2.entity.movement;
 
 import java.util.Objects;
 

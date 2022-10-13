@@ -1,4 +1,4 @@
-package witixin.mountables2.entity.newmountable.movement;
+package witixin.mountables2.entity.movement;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -33,6 +33,9 @@ public record KeyStrokeMovement(boolean up, boolean down, boolean left, boolean 
         return up || down;
     }
 
+    public boolean isEmpty(){
+        return !(up && down && left && right && jump);
+    }
 
     @Override
     public String toString() {

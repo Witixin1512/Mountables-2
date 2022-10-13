@@ -2,7 +2,7 @@ package witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 
 import java.util.function.Supplier;
 

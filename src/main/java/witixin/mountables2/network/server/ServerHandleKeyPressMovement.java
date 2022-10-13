@@ -4,8 +4,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import witixin.mountables2.entity.newmountable.Mountable;
-import witixin.mountables2.entity.newmountable.movement.KeyStrokeMovement;
+import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.movement.KeyStrokeMovement;
 
 import java.util.function.Supplier;
 

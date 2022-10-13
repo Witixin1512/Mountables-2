@@ -1,7 +1,7 @@
 package witixin.mountables2.entity.goal;
 
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 
 public class MountableFloatGoal extends FloatGoal {
 

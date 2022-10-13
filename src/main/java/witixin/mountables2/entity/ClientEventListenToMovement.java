@@ -1,4 +1,4 @@
-package witixin.mountables2.entity.newmountable;
+package witixin.mountables2.entity;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -6,7 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
-import witixin.mountables2.entity.newmountable.movement.KeyStrokeMovement;
+import witixin.mountables2.entity.movement.KeyStrokeMovement;
 import witixin.mountables2.network.PacketHandler;
 import witixin.mountables2.network.server.ServerHandleKeyPressMovement;
 

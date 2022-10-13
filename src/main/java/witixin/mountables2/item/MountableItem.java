@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.data.MountableManager;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 
 public class MountableItem extends Item {
     public MountableItem(Properties pProperties) {

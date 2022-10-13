@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 import software.bernie.geckolib3.renderers.geo.layer.LayerGlowingAreasGeo;
 import witixin.mountables2.Mountables2Mod;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 
 
 public class MountableGlowingLayer extends LayerGlowingAreasGeo<Mountable> {

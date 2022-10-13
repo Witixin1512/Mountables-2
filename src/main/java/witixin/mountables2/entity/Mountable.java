@@ -1,4 +1,4 @@
-package witixin.mountables2.entity.newmountable;
+package witixin.mountables2.entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
@@ -33,9 +33,9 @@ import witixin.mountables2.data.MountableData;
 import witixin.mountables2.data.MountableManager;
 import witixin.mountables2.entity.goal.MountableFollowGoal;
 import witixin.mountables2.entity.goal.MountableWanderGoal;
-import witixin.mountables2.entity.newmountable.movement.KeyStrokeMovement;
-import witixin.mountables2.entity.newmountable.movement.MountTravel;
-import witixin.mountables2.entity.newmountable.movement.MovementRegistry;
+import witixin.mountables2.entity.movement.KeyStrokeMovement;
+import witixin.mountables2.entity.movement.MountTravel;
+import witixin.mountables2.entity.movement.MovementRegistry;
 
 import java.util.List;
 import java.util.Map;

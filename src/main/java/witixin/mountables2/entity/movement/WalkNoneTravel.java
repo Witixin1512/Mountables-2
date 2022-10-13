@@ -1,7 +1,7 @@
-package witixin.mountables2.entity.newmountable.movement;
+package witixin.mountables2.entity.movement;
 
 import net.minecraft.world.phys.Vec3;
-import witixin.mountables2.entity.newmountable.Mountable;
+import witixin.mountables2.entity.Mountable;
 
 public class WalkNoneTravel implements MountMovement {
 

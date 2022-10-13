@@ -100,9 +100,6 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.35')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
-    //runtimeOnly fg.deobf("curse.maven:drp-global-datapack-317134:3680994")
-    //runtimeOnly fg.deobf("curse.maven:open-loader-354339:3697234")
-    //runtimeOnly fg.deobf("curse.maven:bookshelf-228525:3732237")
 }
 
 jar {

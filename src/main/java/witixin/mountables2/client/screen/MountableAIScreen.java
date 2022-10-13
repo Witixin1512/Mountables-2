@@ -5,8 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import witixin.mountables2.client.screen.widgets.LinkedSwitchableWidget;
 import witixin.mountables2.client.screen.widgets.SwitchableWidget;
-import witixin.mountables2.entity.newmountable.movement.MountTravel;
-import witixin.mountables2.entity.newmountable.movement.MovementRegistry;
+import witixin.mountables2.entity.movement.MountTravel;
+import witixin.mountables2.entity.movement.MovementRegistry;
 import witixin.mountables2.network.PacketHandler;
 import witixin.mountables2.network.server.ServerUpdateMinorMovement;
 
