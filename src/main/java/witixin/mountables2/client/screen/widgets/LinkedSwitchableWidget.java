@@ -31,7 +31,7 @@ public class LinkedSwitchableWidget extends AbstractWidget {
         for (SwitchableWidget w : widgets) {
             w.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
-        fill(pPoseStack, x, y, x + width, y + height, 0xaa00ff00);
+        //DEBUG POSITION fill(pPoseStack, x, y, x + width, y + height, 0xaa00ff00);
     }
 
     @Override
