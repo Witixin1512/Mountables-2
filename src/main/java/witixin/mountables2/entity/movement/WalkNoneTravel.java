@@ -5,7 +5,7 @@ import witixin.mountables2.entity.Mountable;
 
 public class WalkNoneTravel implements MountMovement {
 
-    boolean airborne;
+    boolean airborne = false;
     boolean jumpOld = false;
 
     @Override
@@ -17,18 +17,18 @@ public class WalkNoneTravel implements MountMovement {
             mount.setFlying(true);
         }
         //only rejump if the key has been let go
-        if (mount.isOnGround() && !mount.getKeyStrokeMovement().jump() && airborne) {
-            airborne = false;
-        }
-        //impulse jump
-        if (mount.isOnGround() && mount.getKeyStrokeMovement().jump() && !airborne) {
-            jumpOld = airborne = true;
-            mod = new Vec3(mod.x, 1.2, mod.z);
-            mount.setOnGround(false);
-        }
 
-        jumpOld = mount.getKeyStrokeMovement().jump();
-
+        if (mount.isOnGround()){
+            if (!mount.getKeyStrokeMovement().spacebar() && airborne){
+                airborne = false;
+            }
+            if (mount.getKeyStrokeMovement().spacebar() && !airborne){
+                jumpOld = airborne = true;
+                mod = new Vec3(mod.x, 1.2, mod.z);
+                mount.setOnGround(false);
+            }
+        }
+        jumpOld = mount.getKeyStrokeMovement().spacebar();
         return mod;
     }
 }

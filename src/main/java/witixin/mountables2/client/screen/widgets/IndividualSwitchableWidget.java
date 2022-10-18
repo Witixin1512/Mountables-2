@@ -13,7 +13,7 @@ public class IndividualSwitchableWidget extends SwitchableWidget {
 
 
     public IndividualSwitchableWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation off, ResourceLocation on, String name, boolean isWater, UUID uuid, boolean selected) {
-        super(pX, pY, pWidth, pHeight, name, name, pButton -> {
+        super(pX, pY, pWidth, pHeight, name, pButton -> {
         });
         this.trackedID = uuid;
         this.isWater = isWater;

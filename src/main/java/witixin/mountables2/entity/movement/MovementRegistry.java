@@ -37,7 +37,7 @@ public enum MovementRegistry {
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (mount, travelVector) ->
         {
             mount.setNoGravity(true);
-            if (mount.getKeyStrokeMovement().jump()) {
+            if (mount.getKeyStrokeMovement().spacebar()) {
                 double up = travelVector.y < 0.2 ? 0.01f : -0.01;
                 travelVector = travelVector.add(0, up, 0);
             }

@@ -43,7 +43,6 @@ public class MountableAIScreen extends CommandChipScreen {
                         0, 50 + (30 * row), //position
                         80, 20, //size
                         I18n.get(String.format("gui.mountables2.ai.%s", travel.minor().name().toLowerCase())),
-                        travel.minor().name(),
                         pButton -> {
                             this.mount.setMinorMovement(travel.major(), travel.minor());
                             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.major(), travel.minor()));
@@ -58,7 +57,7 @@ public class MountableAIScreen extends CommandChipScreen {
             column++;
         }
 
-        addRenderableWidget(new SwitchableWidget((posX / 2 - 50), posY / 2 + 72, 100, 20, I18n.get("entity.mountables2.mountable_entity"), "Mountable", pButton -> {
+        addRenderableWidget(new SwitchableWidget((posX / 2 - 50), posY / 2 + 72, 100, 20, I18n.get("entity.mountables2.mountable_entity"),  pButton -> {
             minecraft.setScreen(new CommandChipScreen(entityId));
         }));
     }

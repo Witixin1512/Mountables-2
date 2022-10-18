@@ -4,6 +4,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import witixin.mountables2.ClientEvents;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
@@ -17,13 +18,14 @@ public class ClientEventListenToMovement {
     public static void keyPressListener(InputEvent.KeyInputEvent event) {
         //TODO safe client getter
         if (ClientReferences.getClientPlayer() != null && ClientReferences.getClientPlayer().isPassenger() && ClientReferences.getClientPlayer().getVehicle() instanceof Mountable mount) {
-            boolean up = ClientReferences.getOptions().keyUp.isDown();
-            boolean down = ClientReferences.getOptions().keyDown.isDown();
+            boolean forwards = ClientReferences.getOptions().keyUp.isDown();
+            boolean backwards = ClientReferences.getOptions().keyDown.isDown();
             boolean left = ClientReferences.getOptions().keyLeft.isDown();
             boolean right = ClientReferences.getOptions().keyRight.isDown();
-            boolean jump = ClientReferences.getOptions().keyJump.isDown();
+            boolean spacebar = ClientReferences.getOptions().keyJump.isDown();
+            boolean down = ClientEvents.isFlyingDownKeyDown();
 
-            KeyStrokeMovement movement = new KeyStrokeMovement(up, down, left, right, jump);
+            KeyStrokeMovement movement = new KeyStrokeMovement(forwards, backwards, left, right, spacebar, down);
 
             if (!mount.getKeyStrokeMovement().equals(movement)) {
                 mount.setKeyStrokeMovement(movement);

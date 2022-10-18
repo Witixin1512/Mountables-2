@@ -229,7 +229,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                     speed /= 2.0d;
 
                 double sideWaysFactor = 0.60;//about two thirds of frontal movement
-                double inverseX = keyStrokeMovement.up() && !keyStrokeMovement.down() ? 1 : -1;
+                double inverseX = keyStrokeMovement.forwards() && !keyStrokeMovement.backwards() ? 1 : -1;
                 double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
                 if (getKeyStrokeMovement().isFrontal())
                     deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * sideWaysFactor : speed) * inverseX;

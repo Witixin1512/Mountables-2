@@ -2,16 +2,9 @@ package witixin.mountables2.entity.movement;
 
 import java.util.Objects;
 
-public class MountTravel {
-    private final Major major;
-    private final Minor minor;
-    private final MountMovement movement;
-
-    public MountTravel(Major major, Minor minor, MountMovement movement) {
-        this.major = major;
-        this.minor = minor;
-        this.movement = movement;
-    }
+public record MountTravel(Major major,
+                          Minor minor,
+                          MountMovement movement) {
 
     public static Minor from(String name) {
         try {
@@ -29,18 +22,6 @@ public class MountTravel {
     @Override
     public boolean equals(Object o) {
         return o instanceof MountTravel other && other.major == major && other.minor == minor;
-    }
-
-    public Major major() {
-        return major;
-    }
-
-    public Minor minor() {
-        return minor;
-    }
-
-    public MountMovement movement() {
-        return movement;
     }
 
     @Override

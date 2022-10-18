@@ -45,15 +45,15 @@ public class CommandChipScreen extends Screen {
         ArrowSelectionWidget arrowRightTex = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
 
 
-        final SwitchableWidget WANDER = new SwitchableWidget(0, 0, 100, 20, I18n.get("gui.mountables2.chip.wander"), "wander", pButton -> {
+        final SwitchableWidget WANDER = new SwitchableWidget(0, 0, 100, 20, I18n.get("gui.mountables2.chip.wander"),  pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.WANDER));
             mount.setFollowMode(Mountable.WANDER);
         });
-        final SwitchableWidget STAY = new SwitchableWidget(0, 40, 100, 20, I18n.get("gui.mountables2.chip.stay"), "stay", pButton -> {
+        final SwitchableWidget STAY = new SwitchableWidget(0, 40, 100, 20, I18n.get("gui.mountables2.chip.stay"),  pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.STAY));
             mount.setFollowMode(Mountable.STAY);
         });
-        final SwitchableWidget FOLLOW = new SwitchableWidget(0, 80, 100, 20, I18n.get("gui.mountables2.chip.follow"), "follow", pButton -> {
+        final SwitchableWidget FOLLOW = new SwitchableWidget(0, 80, 100, 20, I18n.get("gui.mountables2.chip.follow"), pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.FOLLOW));
             mount.setFollowMode(Mountable.FOLLOW);
         });
@@ -72,7 +72,7 @@ public class CommandChipScreen extends Screen {
 
         this.addRenderableWidget(new LinkedArrowWidget(posX / 2 - 50, posY / 2 + (mount.getLockSwitch() ? 30 : 20), 100, 16, arrowLeftTex, arrowRightTex, I18n.get("gui.mountables2.chip.texture")));
 
-        this.addRenderableWidget(new SwitchableWidget(posX / 2 - 50, (posY - 256) / 2 + 200, 100, 20, I18n.get("gui.mountables2.ai.ai"), "AI", pButton -> {
+        this.addRenderableWidget(new SwitchableWidget(posX / 2 - 50, (posY - 256) / 2 + 200, 100, 20, I18n.get("gui.mountables2.ai.ai"),  pButton -> {
             minecraft.setScreen(new MountableAIScreen(entityId));
         }));
     }
