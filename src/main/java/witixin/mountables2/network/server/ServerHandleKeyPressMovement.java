@@ -35,8 +35,7 @@ public class ServerHandleKeyPressMovement {
     public static void handle(ServerHandleKeyPressMovement packet, Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             ServerPlayer player = context.get().getSender();
-            ServerLevel level = player.getLevel();
-            if (player != null && player.isPassenger() && player.getVehicle() instanceof Mountable mount) {
+            if (player != null && player.getVehicle() instanceof Mountable mount) {
                 mount.setKeyStrokeMovement(packet.movement);
             }
         });

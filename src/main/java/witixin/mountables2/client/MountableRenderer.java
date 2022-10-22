@@ -13,7 +13,6 @@ import witixin.mountables2.entity.Mountable;
 public class MountableRenderer extends GeoEntityRenderer<Mountable> {
     public MountableRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new MountableModel());
-        //this.addLayer(new MountableLayer(this));
         this.addLayer(new MountableGlowingLayer(this));
     }
 
