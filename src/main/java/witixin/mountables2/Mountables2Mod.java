@@ -46,7 +46,9 @@ import witixin.mountables2.item.CommandChip;
 import witixin.mountables2.item.MountableItem;
 import witixin.mountables2.network.PacketHandler;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 
 
@@ -183,11 +185,14 @@ public class Mountables2Mod {
         return new ResourceLocation(MODID, s);
     }
 
+    /**
+     * Only called on the ServerSide
+     * @param unique_name The unique_name of the mountable data to find.
+     * @param server The MinecraftServer we are looking in
+     * @return The MountableData with the right unique_name
+     */
     public static MountableData findData(String unique_name, MinecraftServer server) {
-        if (server != null){
-            return server.getRecipeManager().getAllRecipesFor(MOUNTABLE_RECIPE_TYPE).stream().filter(recipe -> recipe.uniqueName().equals(unique_name)).findAny().get();
-        }
-        return ClientForgeEvents.dataList.stream().filter(recipe -> recipe.uniqueName().equals(unique_name)).findAny().get();
+        return server.getRecipeManager().getAllRecipesFor(MOUNTABLE_RECIPE_TYPE).stream().filter(recipe -> recipe.uniqueName().equals(unique_name)).findAny().get();
     }
 
 
