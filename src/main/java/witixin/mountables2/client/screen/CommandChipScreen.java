@@ -1,5 +1,6 @@
 package witixin.mountables2.client.screen;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TextComponent;
@@ -12,37 +13,42 @@ import witixin.mountables2.client.screen.widgets.SwitchableWidget;
 import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.network.PacketHandler;
 import witixin.mountables2.network.server.ServerUpdateMountFollowTypePacket;
+import witixin.mountables2.network.server.ServerUpdateMountModelPacket;
+import witixin.mountables2.network.server.ServerUpdateMountTexturePacket;
 
 public class CommandChipScreen extends Screen {
 
     private static final ResourceLocation ARROW_LEFT = Mountables2Mod.rl("gui/mountable_left_button.png");
     private static final ResourceLocation ARROW_RIGHT = Mountables2Mod.rl("gui/mountable_right_button.png");
+    private static final int PREVIOUS = -1;
+    private static final int NEXT = 1;
+
     public Mountable mount;
     public final int entityId;
 
     public CommandChipScreen(int mountId) {
         super(new TextComponent("commandchipscreen"));
         this.entityId = mountId;
+        if (Minecraft.getInstance().level.getEntity(entityId) instanceof Mountable mount)
+            this.mount = mount;
     }
 
     @Override
     protected void init() {
-        super.init();
-        if (minecraft.level.getEntity(entityId) instanceof Mountable mount)
-            this.mount = mount;
-        else throw new NullPointerException("given entity was not a mount !");
-
-        if (this instanceof MountableAIScreen)
-            return;//prevent drawing all the other buttons from the mountable ai screen which extends this class
 
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
 
-        ArrowSelectionWidget arrowLeftModel = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
-        ArrowSelectionWidget arrowRightModel = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
+        //TODO Make sure data is saved and synced somehow
+        ArrowSelectionWidget arrowLeftModel = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT,
+                () -> PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountModelPacket(entityId, PREVIOUS)));
+        ArrowSelectionWidget arrowRightModel = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT,
+                () -> PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountModelPacket(entityId, NEXT)));
 
-        ArrowSelectionWidget arrowLeftTex = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT);
-        ArrowSelectionWidget arrowRightTex = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT);
+        ArrowSelectionWidget arrowLeftTex = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT,
+                () -> PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountTexturePacket(entityId, PREVIOUS)));
+        ArrowSelectionWidget arrowRightTex = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT,
+                () -> PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountTexturePacket(entityId, NEXT)));
 
 
         final SwitchableWidget WANDER = new SwitchableWidget(0, 0, 100, 20, I18n.get("gui.mountables2.chip.wander"),  pButton -> {
@@ -65,7 +71,6 @@ public class CommandChipScreen extends Screen {
 
         this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - 50, posY / 2 - 100 , 100, 35 * selectable.length, mount.getFollowMode(), selectable));
 
-        //TODO add function to arrow keys
         if (!mount.getLockSwitch()) {
             this.addRenderableWidget(new LinkedArrowWidget(posX / 2 - 50, posY / 2 + 40, 100, 16, arrowLeftModel, arrowRightModel, I18n.get("gui.mountables2.chip.model")));
         }

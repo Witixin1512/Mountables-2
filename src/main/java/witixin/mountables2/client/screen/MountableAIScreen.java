@@ -21,7 +21,6 @@ public class MountableAIScreen extends CommandChipScreen {
 
     @Override
     protected void init() {
-        super.init();
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
 

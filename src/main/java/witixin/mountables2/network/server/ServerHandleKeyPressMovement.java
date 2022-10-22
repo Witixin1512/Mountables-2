@@ -1,7 +1,6 @@
 package witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import witixin.mountables2.entity.Mountable;

@@ -2,7 +2,6 @@ package witixin.mountables2;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import witixin.mountables2.client.screen.CommandChipScreen;

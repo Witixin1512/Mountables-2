@@ -34,9 +34,8 @@ public class LinkedArrowWidget extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double pMouseX, double pMouseY) {
-        super.onClick(pMouseX, pMouseY);
-        right.onClick(pMouseX, pMouseY);
-        left.onClick(pMouseX, pMouseY);
+    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+        return right.mouseClicked(pMouseX, pMouseY, pButton) || left.mouseClicked(pMouseX, pMouseY, pButton);
     }
+
 }

@@ -4,7 +4,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import witixin.mountables2.ClientEvents;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
@@ -16,7 +15,6 @@ public class ClientEventListenToMovement {
 
     @SubscribeEvent
     public static void keyPressListener(InputEvent.KeyInputEvent event) {
-        //TODO safe client getter
         if (ClientReferences.getClientPlayer() != null && ClientReferences.getClientPlayer().isPassenger() && ClientReferences.getClientPlayer().getVehicle() instanceof Mountable mount) {
             boolean forwards = ClientReferences.getOptions().keyUp.isDown();
             boolean backwards = ClientReferences.getOptions().keyDown.isDown();
