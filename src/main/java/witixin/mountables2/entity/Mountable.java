@@ -17,7 +17,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -28,9 +31,8 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
-import witixin.mountables2.client.screen.CommandChipScreen;
 import witixin.mountables2.data.MountableData;
-import witixin.mountables2.data.MountableManager;
+import witixin.mountables2.data.MountableSerializer;
 import witixin.mountables2.entity.goal.MountableFollowGoal;
 import witixin.mountables2.entity.goal.MountableWanderGoal;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
@@ -48,6 +50,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+    public static final EntityDataAccessor<String> MAJOR_MOVEMENT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Integer> EMISSIVE_TEXTURE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Byte> FOLLOW_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BYTE);
     public static final EntityDataAccessor<Boolean> AIRBOURNE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
@@ -58,14 +61,17 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     private final AnimationFactory factory = new AnimationFactory(this);
     private MountableData mountableData;
+    //Never set this value outside of setMajor()
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
     private boolean lockSwitch;
     private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
-    private boolean jumpOld = false;
+
+    private int hopTimer;
 
     public Mountable(EntityType type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
-        dimensions = getDimensions(Pose.STANDING); //pose not important
+        dimensions = getDimensions(Pose.STANDING); //pose
+        setMajor(getMajor());
     }
 
     @Override
@@ -80,17 +86,33 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public void tick() {
         super.tick();
         if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.SWIM, getMinorMovement(MountTravel.Major.SWIM));
+            setMajor(MountTravel.Major.SWIM);
         } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, getMinorMovement(MountTravel.Major.WALK));
+            setMajor(MountTravel.Major.WALK);
             if (this.isFlying()) setFlying(false);//walk when landing
         } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
-            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.FLY, getMinorMovement(MountTravel.Major.FLY));
+            setMajor(MountTravel.Major.FLY);
         }
     }
 
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
         return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
+    }
+
+    public MountTravel.Major getMajor(){
+        return MountTravel.Major.valueOf(this.entityData.get(MAJOR_MOVEMENT));
+    }
+
+    public void setMajor(MountTravel.Major major){
+        setMajor(major, getMinorMovement(major));
+    }
+
+    public void setMajor(MountTravel.Major major, MountTravel.Minor minor){
+        if (!this.level.isClientSide){
+            this.entityData.set(MAJOR_MOVEMENT, major.name());
+            setNoGravity(major.isNoGravity());
+        }
+        currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
     }
 
     public boolean isFlying() {
@@ -122,7 +144,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     public MountableData getMountableData() {
         if (this.mountableData == null) {
-            this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath());
+            this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath(), EffectiveSide.get().isServer() ? this.getServer() : null);
             loadMountableData(mountableData);
         }
         return this.mountableData;
@@ -168,7 +190,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public boolean canFly() {
-        return getMountableData().aiModes()[MountableManager.FLY];
+        return getMountableData().aiModes()[MountableSerializer.FLY];
     }
 
     public byte getFollowMode() {
@@ -196,7 +218,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                 return InteractionResult.SUCCESS;
             }
         } else if (pPlayer.getItemInHand(pHand).getItem().equals(Mountables2Mod.COMMAND_CHIP.get()) && pPlayer.getUUID().equals(getOwnerUUID())) {
-            ClientReferences.open(new CommandChipScreen(getId()));
+            ClientReferences.openCommandChipScreen(getId());
             return InteractionResult.sidedSuccess(true);
         }
 
@@ -212,7 +234,6 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         Vec3 newvector = pTravelVector;
 
         if (isAlive()) {
-
             if (isVehicle() && canBeControlledByRider() && getFirstPassenger() instanceof LivingEntity rider) {
                 rotateBodyTo(rider);
                 /********************handle rotation and moving forward************************/
@@ -245,17 +266,20 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
                 newvector = currentTravelMethod.movement().travel(this, pTravelVector);
             }
+            else {
+
+            }
         }
         this.setDeltaMovement(this.getDeltaMovement().add(newvector));
         super.travel(newvector);
     }
 
     public boolean canWalk() {
-        return getMountableData().aiModes()[MountableManager.WALK];
+        return getMountableData().aiModes()[MountableSerializer.WALK];
     }
 
     public boolean canSwim() {
-        return getMountableData().aiModes()[MountableManager.FLY];
+        return getMountableData().aiModes()[MountableSerializer.FLY];
     }
 
     @Nullable
@@ -319,7 +343,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.entityData.define(UNIQUE_NAME, MountableManager.get().get(0).uniqueName());
+        this.entityData.define(UNIQUE_NAME, "companion_block");
         this.entityData.define(EMISSIVE_TEXTURE, -1);
         this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NONE.name());
@@ -328,6 +352,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.define(ENTITY_HEIGHT, 1.0f);
         this.entityData.define(FOLLOW_MODE, FOLLOW);
         this.entityData.define(AIRBOURNE, false);
+        this.entityData.define(MAJOR_MOVEMENT, MountTravel.Major.WALK.name());
     }
 
     @Override
@@ -346,6 +371,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         tag.putFloat("mountable_width", this.entityData.get(ENTITY_WIDTH));
         tag.putFloat("mountable_height", this.entityData.get(ENTITY_HEIGHT));
         tag.putBoolean("lock_switch", lockSwitch);
+        tag.putString("movement_major", this.getMajor().name());
     }
 
     @Override
@@ -363,6 +389,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.set(ENTITY_WIDTH, tag.getFloat("mountable_width"));
         this.entityData.set(ENTITY_HEIGHT, tag.getFloat("mountable_height"));
         this.lockSwitch = tag.getBoolean("lock_switch");
+        this.setMajor(MountTravel.Major.valueOf(tag.getString("movement_major")));
     }
 
     public void setAbsoluteEmissive(int index) {
@@ -371,7 +398,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     //called from interaction screen with entity
     public void setMinorMovement(MountTravel.Major major, MountTravel.Minor minor) {
-        this.entityData.set(getEDAForMinor(major), minor.name());
+        this.setMajor(major, minor);
     }
 
     private EntityDataAccessor<String> getEDAForMinor(MountTravel.Major major) {
@@ -392,5 +419,17 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     public KeyStrokeMovement getKeyStrokeMovement() {
         return keyStrokeMovement;
+    }
+
+    public int getHopTimer() {
+        return hopTimer;
+    }
+
+    public void setHopTimer(int hopTimer) {
+        this.hopTimer = hopTimer;
+    }
+
+    public void raiseHopTimer(){
+        hopTimer++;
     }
 }

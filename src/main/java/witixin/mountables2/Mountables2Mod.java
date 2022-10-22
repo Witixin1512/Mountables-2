@@ -1,7 +1,9 @@
 package witixin.mountables2;
 
 import net.minecraft.Util;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
@@ -17,14 +19,18 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -33,7 +39,6 @@ import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 import witixin.mountables2.data.ChestLootModifier;
 import witixin.mountables2.data.MountableData;
-import witixin.mountables2.data.MountableManager;
 import witixin.mountables2.data.files.FileUtils;
 import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.entity.movement.MovementRegistry;
@@ -41,9 +46,7 @@ import witixin.mountables2.item.CommandChip;
 import witixin.mountables2.item.MountableItem;
 import witixin.mountables2.network.PacketHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 
 
@@ -103,6 +106,7 @@ public class Mountables2Mod {
             });
     public static final RegistryObject<SoundEvent> EMPTY_SOUND_EVENT = SOUND_REGISTER.register("empty", () -> new SoundEvent(rl("empty")));
 
+
     public Mountables2Mod() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::attributeCreation);
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -121,8 +125,15 @@ public class Mountables2Mod {
     public static final RegistryObject<Item> MOUNTABLE_CORE = ITEM_REGISTER.register("mountable_core",
             () -> new Item(DEFAULT_PROPERTIES.stacksTo(1).fireResistant()));
 
+    public static final RecipeType<MountableData> MOUNTABLE_RECIPE_TYPE = new RecipeType<>() {
+        @Override
+        public String toString() {
+            return MODID + ":custom_mountables";
+        }
+    };
+
     private void attributeCreation(final EntityAttributeCreationEvent event) {
-        event.put(MOUNTABLE_ENTITY.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FLYING_SPEED, 0).add(Attributes.FOLLOW_RANGE, 10).add(Attributes.ATTACK_DAMAGE, 0).add(Attributes.JUMP_STRENGTH, 0.5).add(Attributes.FLYING_SPEED, 0.5).build());
+        event.put(MOUNTABLE_ENTITY.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FLYING_SPEED, 0).add(Attributes.FOLLOW_RANGE, 10).add(Attributes.ATTACK_DAMAGE, 0).add(Attributes.JUMP_STRENGTH, 1.4).add(Attributes.FLYING_SPEED, 0.5).build());
     }
 
     private void onDataPackLoad(AddReloadListenerEvent event) {
@@ -137,8 +148,6 @@ public class Mountables2Mod {
                 FileUtils.createDataPackIfNotExists();
             }
         });
-        //MOUNTABLE_MANAGER is a SimpleJSONReloadListener
-        event.addListener(new MountableManager("custom_mountables"));
     }
 
     public static final RegistryObject<Item> MOUNTABLE = ITEM_REGISTER.register("mountable",
@@ -174,8 +183,11 @@ public class Mountables2Mod {
         return new ResourceLocation(MODID, s);
     }
 
-    public static MountableData findData(String unique_name) {
-        return MountableManager.get().stream().filter(e -> e.uniqueName().matches(unique_name)).findFirst().get();
+    public static MountableData findData(String unique_name, MinecraftServer server) {
+        if (server != null){
+            return server.getRecipeManager().getAllRecipesFor(MOUNTABLE_RECIPE_TYPE).stream().filter(recipe -> recipe.uniqueName().equals(unique_name)).findAny().get();
+        }
+        return ClientForgeEvents.dataList.stream().filter(recipe -> recipe.uniqueName().equals(unique_name)).findAny().get();
     }
 
 
@@ -188,5 +200,15 @@ public class Mountables2Mod {
             return toReturn;
         }
     };
+
+
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = MODID)
+    static class ModEvents {
+        @SubscribeEvent
+        public static void registerRecipeSerializers(RegistryEvent.Register<RecipeSerializer<?>> event) {
+            Registry.register(Registry.RECIPE_TYPE, new ResourceLocation(MOUNTABLE_RECIPE_TYPE.toString()), MOUNTABLE_RECIPE_TYPE);
+            event.getRegistry().register(MountableData.MOUNTABLE_SERIALIZER);
+        }
+    }
 }
 

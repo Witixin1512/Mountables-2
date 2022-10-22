@@ -46,7 +46,7 @@ public class FileUtils {
         createDirectoryIfNotExists(root);
         final PackMCMetaTemplate packMcmeta = new PackMCMetaTemplate(root.getParentFile().getParentFile(), "Mountables2 Data", PackType.SERVER_DATA);
         packMcmeta.writeIfNotExists();
-        File mountablesFolder = new File(root, "custom_mountables");
+        File mountablesFolder = new File(root, "recipes");
         createDirectoryIfNotExists(mountablesFolder);
         File companionBlock = new File(mountablesFolder, "" +
                 "companion_block.json");

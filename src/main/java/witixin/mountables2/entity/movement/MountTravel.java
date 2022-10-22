@@ -28,14 +28,28 @@ public record MountTravel(Major major,
     public String toString() {
         return "MountTravel[" +
                 "major=" + major + ", " +
-                "minor=" + minor + ", " +
-                "movement=" + movement + ']';
+                "minor=" + minor + "]";
     }
 
 
     public enum Major {
-        FLY, WALK, SWIM
+        FLY(true), WALK(false), SWIM(false);
+
+        private final boolean noGravity;
+
+        Major(boolean noGravity){
+            this.noGravity = noGravity;
+        }
+
+        public boolean isNoGravity() {
+            return noGravity;
+        }
     }
+
+    /**
+     * Minor movement types are modifiers that are applied to the various {@link Major} movement types.
+     * {@link Minor.NONE} implies that it should work normally, whereas the other types are intuitive.
+     */
 
     public enum Minor {
         HOP, SLOW, FLOAT, SINK, NONE

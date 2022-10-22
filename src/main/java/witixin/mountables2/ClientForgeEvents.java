@@ -6,16 +6,21 @@ import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import witixin.mountables2.data.MountableData;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Mountables2Mod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientForgeEvents {
+
+    public static List<MountableData> dataList;
 
     private final static Map<String, Supplier<SoundEvent>> substitute = Util.make(() -> {
         Map<String, Supplier<SoundEvent>> map = new HashMap<>();
@@ -27,6 +32,11 @@ public class ClientForgeEvents {
         map.put("splash", () -> SoundEvents.GENERIC_SPLASH);
         return map;
     });
+
+    @SubscribeEvent
+    public static void onRecipesUpdated(final RecipesUpdatedEvent event){
+        dataList = event.getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE);
+    }
 
     @SubscribeEvent
     public static void soundEvent(final PlaySoundEvent event) {
