@@ -23,9 +23,8 @@ public class ClientEventListenToMovement {
             boolean left = ClientReferences.getOptions().keyLeft.isDown();
             boolean right = ClientReferences.getOptions().keyRight.isDown();
             boolean spacebar = ClientReferences.getOptions().keyJump.isDown();
-            boolean down = ClientEvents.isFlyingDownKeyDown();
 
-            KeyStrokeMovement movement = new KeyStrokeMovement(forwards, backwards, left, right, spacebar, down);
+            KeyStrokeMovement movement = new KeyStrokeMovement(forwards, backwards, left, right, spacebar);
 
             if (!mount.getKeyStrokeMovement().equals(movement)) {
                 mount.setKeyStrokeMovement(movement);
