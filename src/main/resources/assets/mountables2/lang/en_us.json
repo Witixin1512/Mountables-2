@@ -7,6 +7,8 @@
   "item.mountables2.command_chip" : "Command Chip",
   "item.mountables2.mountable" : "Mount",
 
+  "msg.mountables2.chip.owner": "You do not own this Mountable!",
+
   "gui.mountables2.ai.ai" : "AI",
   "gui.mountables2.ai.swim" : "Swim",
   "gui.mountables2.ai.walk" : "Walk",

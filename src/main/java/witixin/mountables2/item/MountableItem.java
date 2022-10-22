@@ -7,8 +7,6 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import witixin.mountables2.ClientForgeEvents;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.entity.Mountable;
 
