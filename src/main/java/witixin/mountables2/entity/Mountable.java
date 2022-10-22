@@ -1,7 +1,9 @@
 package witixin.mountables2.entity;
 
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,10 +19,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.util.thread.EffectiveSide;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -39,7 +38,6 @@ import witixin.mountables2.entity.movement.KeyStrokeMovement;
 import witixin.mountables2.entity.movement.MountTravel;
 import witixin.mountables2.entity.movement.MovementRegistry;
 
-import java.util.List;
 import java.util.Map;
 
 public class Mountable extends TamableAnimal implements IAnimatable {
@@ -47,17 +45,25 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public static final EntityDataAccessor<Float> ENTITY_WIDTH = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<Float> ENTITY_HEIGHT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<String> UNIQUE_NAME = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
+    public static final EntityDataAccessor<String> EMISSIVE_TEXTURE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MAJOR_MOVEMENT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
-    public static final EntityDataAccessor<Integer> EMISSIVE_TEXTURE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Byte> FOLLOW_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BYTE);
     public static final EntityDataAccessor<Boolean> AIRBOURNE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+
+    public static final EntityDataAccessor<Boolean> CAN_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> CAN_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> CAN_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+
+    public static final EntityDataAccessor<Integer> HOP_TIMER = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
 
     public static final byte FOLLOW = 0;
     public static final byte WANDER = 1;
     public static final byte STAY = 2;
+
+    public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
 
     private final AnimationFactory factory = new AnimationFactory(this);
     private MountableData mountableData;
@@ -129,29 +135,19 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public String getEmissiveTexture() {
-        final List<String> mountableData = getMountableData().emissiveTextures();
-        final int textIndex = getEmissiveTextureIndex();
-        if (textIndex == -1 || textIndex >= mountableData.size()) return "transparent";
-        return mountableData.get(getEmissiveTextureIndex());
+        return this.entityData.get(EMISSIVE_TEXTURE);
     }
 
-    public void setEmissiveTexture(int index) {
-        index += getEmissiveTextureIndex();
-        if (index == -2) index = this.getMountableData().emissiveTextures().size() - 1;
-        if (index >= this.getMountableData().emissiveTextures().size()) index = -1;
-        this.entityData.set(EMISSIVE_TEXTURE, index);
+    public void setEmissiveTexture(String toSet) {
+        this.entityData.set(EMISSIVE_TEXTURE, toSet);
     }
 
     public MountableData getMountableData() {
         if (this.mountableData == null) {
-            this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath(), EffectiveSide.get().isServer() ? this.getServer() : null);
+            this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath(), this.getServer());
             loadMountableData(mountableData);
         }
         return this.mountableData;
-    }
-
-    private int getEmissiveTextureIndex() {
-        return this.entityData.get(EMISSIVE_TEXTURE);
     }
 
     public ResourceLocation getUniqueResourceLocation() {
@@ -159,10 +155,12 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public void loadMountableData(MountableData data) {
+        this.mountableData = data;
         this.setUniqueName(data.uniqueName());
         this.setCustomNameVisible(true);
         this.setCustomName(new TextComponent(data.displayName()));
         this.processAttributes(data.attributeMap());
+        this.updateMovementAbilities();
         this.entityData.set(ENTITY_WIDTH, (float) data.width());
         this.entityData.set(ENTITY_HEIGHT, (float) data.height());
     }
@@ -171,8 +169,11 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.set(UNIQUE_NAME, s);
     }
 
-    //what does this do ? //TODO check for functionality
-    //This should def be moved to something that doesnt use reflection really...
+    /**
+     * Reflection is here to support any of the vanilla attributes.
+     * TODO maybe rethink this and only support the 5 regular ones.
+     * @param dataAttributeMap
+     */
     private void processAttributes(Map<String, Double> dataAttributeMap) {
         for (Map.Entry<String, Double> entry : dataAttributeMap.entrySet()) {
             try {
@@ -189,10 +190,6 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         return this.getFirstPassenger();
     }
 
-    public boolean canFly() {
-        return getMountableData().aiModes()[MountableSerializer.FLY];
-    }
-
     public byte getFollowMode() {
         return this.entityData.get(FOLLOW_MODE);
     }
@@ -204,7 +201,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
 
         if (!pPlayer.level.isClientSide) {
-            if (pPlayer.isShiftKeyDown() && pPlayer.getUUID().equals(getOwnerUUID())) {
+            if (pPlayer.isShiftKeyDown() && pPlayer.getUUID().equals(getOwnerUUID()) && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
                 this.remove(RemovalReason.DISCARDED);
                 //TODO this.dropMountableItem();
                 return InteractionResult.SUCCESS;
@@ -217,9 +214,15 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                 }
                 return InteractionResult.SUCCESS;
             }
-        } else if (pPlayer.getItemInHand(pHand).getItem().equals(Mountables2Mod.COMMAND_CHIP.get()) && pPlayer.getUUID().equals(getOwnerUUID())) {
-            ClientReferences.openCommandChipScreen(getId());
-            return InteractionResult.sidedSuccess(true);
+        } else if (pPlayer.getItemInHand(pHand).getItem().equals(Mountables2Mod.COMMAND_CHIP.get())) {
+            if (pPlayer.getUUID().equals(getOwnerUUID())){
+                ClientReferences.openCommandChipScreen(getId());
+                return InteractionResult.sidedSuccess(true);
+            } else {
+                pPlayer.sendMessage(new TranslatableComponent("msg.mountables2.chip.owner"), Util.NIL_UUID);
+                return InteractionResult.FAIL;
+            }
+
         }
 
         return super.mobInteract(pPlayer, pHand);
@@ -240,10 +243,10 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                 double deltaX = 0, deltaY = 0, deltaZ = 0;
                 double rotation = this.getYRot() * (Mth.PI / 180F);
 
-                double speed = getMountableData().getAttributeValue(MountableData.AttributeMap.MOVEMENT_SPEED);
+                double speed = this.getAttributeValue(Attributes.MOVEMENT_SPEED);
 
                 if (isFlying())
-                    speed = getMountableData().getAttributeValue(MountableData.AttributeMap.FLYING_SPEED);
+                    speed = this.getAttributeValue(Attributes.FLYING_SPEED);
 
                 //Set slow speed modifier last
                 if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
@@ -275,11 +278,22 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public boolean canWalk() {
-        return getMountableData().aiModes()[MountableSerializer.WALK];
+        return entityData.get(CAN_WALK);
     }
 
     public boolean canSwim() {
-        return getMountableData().aiModes()[MountableSerializer.FLY];
+        return entityData.get(CAN_SWIM);
+    }
+
+    public boolean canFly() {
+        return entityData.get(CAN_FLY);
+    }
+
+    public void updateMovementAbilities(){
+        final Boolean[] AI_MODES = mountableData.aiModes();
+        this.entityData.set(CAN_WALK, AI_MODES[MountableSerializer.WALK]);
+        this.entityData.set(CAN_FLY, AI_MODES[MountableSerializer.FLY]);
+        this.entityData.set(CAN_SWIM, AI_MODES[MountableSerializer.SWIM]);
     }
 
     @Nullable
@@ -344,7 +358,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(UNIQUE_NAME, "companion_block");
-        this.entityData.define(EMISSIVE_TEXTURE, -1);
+        this.entityData.define(EMISSIVE_TEXTURE, TRANSPARENT_EMISSIVE_TEXTURE);
         this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_WALK, MountTravel.Minor.NONE.name());
@@ -353,15 +367,18 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.define(FOLLOW_MODE, FOLLOW);
         this.entityData.define(AIRBOURNE, false);
         this.entityData.define(MAJOR_MOVEMENT, MountTravel.Major.WALK.name());
+        this.entityData.define(CAN_FLY, false);
+        this.entityData.define(CAN_WALK, false);
+        this.entityData.define(CAN_SWIM, false);
+        this.entityData.define(HOP_TIMER, -1);
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
-        tag.putInt("emissive_texture", getEmissiveTextureIndex());
-        //Why is model position commented out?
-//        tag.putInt("model_position", getModelPosition());
+        tag.putString("emissive_texture", getEmissiveTexture());
+
         tag.putBoolean("flying", this.entityData.get(AIRBOURNE));
         tag.putString("minor_fly", this.entityData.get(MINOR_MOVEMENT_FLY));
         tag.putString("minor_walk", this.entityData.get(MINOR_MOVEMENT_WALK));
@@ -372,29 +389,34 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         tag.putFloat("mountable_height", this.entityData.get(ENTITY_HEIGHT));
         tag.putBoolean("lock_switch", lockSwitch);
         tag.putString("movement_major", this.getMajor().name());
+
+        tag.putBoolean("can_fly", this.canFly());
+        tag.putBoolean("can_walk", this.canWalk());
+        tag.putBoolean("can_swim", this.canSwim());
+
+        tag.putInt("hop_timer", this.getHopTimer());
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.setUniqueName(tag.getString("unique_mountable_name"));
-        this.setAbsoluteEmissive(tag.getInt("emissive_texture"));
-//        this.setModelPosition(tag.getInt("model_position"));
+        this.setEmissiveTexture(tag.getString("emissive_texture"));
         this.entityData.set(AIRBOURNE, tag.getBoolean("flying"));
         this.entityData.set(MINOR_MOVEMENT_FLY, tag.getString("minor_fly"));
         this.entityData.set(MINOR_MOVEMENT_WALK, tag.getString("minor_walk"));
         this.entityData.set(MINOR_MOVEMENT_SWIM, tag.getString("minor_swim"));
         this.entityData.set(FOLLOW_MODE, tag.getByte("follow_mode"));
-
         this.entityData.set(ENTITY_WIDTH, tag.getFloat("mountable_width"));
         this.entityData.set(ENTITY_HEIGHT, tag.getFloat("mountable_height"));
         this.lockSwitch = tag.getBoolean("lock_switch");
         this.setMajor(MountTravel.Major.valueOf(tag.getString("movement_major")));
+        this.entityData.set(CAN_FLY, tag.getBoolean("can_fly"));
+        this.entityData.set(CAN_WALK, tag.getBoolean("can_walk"));
+        this.entityData.set(CAN_SWIM, tag.getBoolean("can_swim"));
+        this.entityData.set(HOP_TIMER, tag.getInt("hop_timer"));
     }
 
-    public void setAbsoluteEmissive(int index) {
-        this.entityData.set(EMISSIVE_TEXTURE, index);
-    }
 
     //called from interaction screen with entity
     public void setMinorMovement(MountTravel.Major major, MountTravel.Minor minor) {
@@ -422,14 +444,14 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     }
 
     public int getHopTimer() {
-        return hopTimer;
+        return entityData.get(HOP_TIMER);
     }
 
-    public void setHopTimer(int hopTimer) {
-        this.hopTimer = hopTimer;
+    public void setHopTimer(int amount){
+        this.entityData.set(HOP_TIMER, amount);
     }
 
     public void raiseHopTimer(){
-        hopTimer++;
+        setHopTimer(getHopTimer() + 1);
     }
 }
