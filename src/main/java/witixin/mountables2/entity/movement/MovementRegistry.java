@@ -2,7 +2,6 @@ package witixin.mountables2.entity.movement;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -18,6 +17,8 @@ public enum MovementRegistry {
     INSTANCE;
 
     private static final double VERTICAL_COEFICIENT = Math.cos(Math.toRadians(87));
+
+    public static final int LAND_HOP_TIMER = 20;
 
     private final Set<MountTravel> registry = new HashSet<>();
 
@@ -46,12 +47,17 @@ public enum MovementRegistry {
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, (mount, travelVector) -> {
             if (mount.isOnGround()){
-                mount.raiseHopTimer();
-                if (mount.getHopTimer() >= 30 && (travelVector.x != 0.0 || travelVector.z != 0.0 || mount.getKeyStrokeMovement().spacebar())){
-                    mount.setHopTimer(0);
+                int timer = mount.getHopTimer();
+                if (!mount.level.isClientSide){
+                    mount.raiseHopTimer();
+                }
+                if (timer >= LAND_HOP_TIMER && (travelVector.x != 0.0 || travelVector.z != 0.0 || mount.getKeyStrokeMovement().spacebar())){
+                    if (!mount.level.isClientSide){
+                        mount.setHopTimer(LAND_HOP_TIMER);
+                    }
                     travelVector = doSlimeJump(mount,  mount.getAttributeBaseValue(Attributes.JUMP_STRENGTH));
                 }
-                if (mount.getHopTimer() != 0){
+                if (timer != 0){
                     travelVector = Vec3.ZERO;
                 }
             }
