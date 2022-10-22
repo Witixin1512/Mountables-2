@@ -13,6 +13,7 @@ import witixin.mountables2.Mountables2Mod;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Mountable Data is a record that stores the JSON contents of a Mountable, when registered through a datapack.
@@ -29,10 +30,6 @@ import java.util.Map;
 public record MountableData(ResourceLocation recipeName, String uniqueName, double width, double height, Double[] position, List<String> emissiveTextures, Boolean[] aiModes, String displayName, Map<String, Double> attributeMap) implements Recipe<Container> {
 
     public static final MountableSerializer MOUNTABLE_SERIALIZER = new MountableSerializer();
-
-    public double getAttributeValue(AttributeMap value) {
-        return this.attributeMap().get(value.name());
-    }
 
     @Override
     public String toString() {
@@ -74,11 +71,42 @@ public record MountableData(ResourceLocation recipeName, String uniqueName, doub
         return Mountables2Mod.MOUNTABLE_RECIPE_TYPE;
     }
 
-    public enum AttributeMap {
-        MOVEMENT_SPEED,
-        JUMP_STRENGTH,
-        MAX_HEALTH,
-        FLYING_SPEED,
-        FOLLOW_RANGE
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MountableData that = (MountableData) o;
+
+        if (Double.compare(that.width, width) != 0) return false;
+        if (Double.compare(that.height, height) != 0) return false;
+        if (!Objects.equals(recipeName, that.recipeName)) return false;
+        if (!Objects.equals(uniqueName, that.uniqueName)) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(position, that.position)) return false;
+        if (!Objects.equals(emissiveTextures, that.emissiveTextures))
+            return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(aiModes, that.aiModes)) return false;
+        if (!Objects.equals(displayName, that.displayName)) return false;
+        return Objects.equals(attributeMap, that.attributeMap);
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = recipeName != null ? recipeName.hashCode() : 0;
+        result = 31 * result + (uniqueName != null ? uniqueName.hashCode() : 0);
+        temp = Double.doubleToLongBits(width);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(height);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + Arrays.hashCode(position);
+        result = 31 * result + (emissiveTextures != null ? emissiveTextures.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(aiModes);
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        result = 31 * result + (attributeMap != null ? attributeMap.hashCode() : 0);
+        return result;
     }
 }
