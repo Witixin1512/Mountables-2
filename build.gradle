@@ -111,7 +111,7 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.35')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.54')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
 }
 

@@ -18,7 +18,8 @@ public class MountableGlowingLayer extends LayerGlowingAreasGeo<Mountable> {
         return Mountables2Mod.rl("textures/" + mountable.getEmissiveTexture() + ".png");
     }
 
-    private static ResourceLocation getModelLocation(Mountable mountable) {
-        return Mountables2Mod.rl("geo/" + mountable.getUniqueResourceLocation().getPath() + ".geo.json");
+    public static ResourceLocation getModelLocation(Mountable object) {
+        return Mountables2Mod.rl("geo/" + object.getUniqueResourceLocation().getPath() + ".geo.json");
     }
+
 }

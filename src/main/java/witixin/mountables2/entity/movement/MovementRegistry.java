@@ -45,6 +45,7 @@ public enum MovementRegistry {
             return travelVector;
         }));
 
+        /*
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, (mount, travelVector) -> {
             if (mount.isOnGround()){
                 int timer = mount.getHopTimer();
@@ -63,6 +64,8 @@ public enum MovementRegistry {
             }
             return travelVector;
         }));
+
+         */
 
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (mount, travelVector) ->
         {
