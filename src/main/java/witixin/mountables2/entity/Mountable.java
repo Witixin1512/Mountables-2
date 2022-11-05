@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.builder.ILoopType;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
@@ -330,23 +331,34 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     }
 
+    private static final AnimationBuilder SWIM_ANIMATION = new AnimationBuilder().addAnimation("swim", ILoopType.EDefaultLoopTypes.LOOP);
+    private static final AnimationBuilder WALK_ANIMATION = new AnimationBuilder().addAnimation("walk", ILoopType.EDefaultLoopTypes.LOOP);
+    private static final AnimationBuilder FLY_ANIMATION = new AnimationBuilder().addAnimation("fly", ILoopType.EDefaultLoopTypes.LOOP);
+    private static final AnimationBuilder IDLE_ANIMATION = new AnimationBuilder().addAnimation("idle", ILoopType.EDefaultLoopTypes.LOOP);
+
+
+
     private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
-        if (event.getAnimatable() instanceof Mountable mountable) {
-            if (event.isMoving()) {
-                if (currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("swim", true));
-                } else if (currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
+            if (event.getAnimatable() instanceof Mountable mountable && event.isMoving()) {
+                if (mountable.currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
+                    event.getController().setAnimation(SWIM_ANIMATION);
+                    return PlayState.CONTINUE;
+                } else if (mountable.currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
                     //TODO JUMP AND LAND
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("walk", true));
-                } else if (currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("fly", true));
+                    event.getController().setAnimation(WALK_ANIMATION);
+                    return PlayState.CONTINUE;
+                } else if (mountable.currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
+                    event.getController().setAnimation(FLY_ANIMATION);
+                    return PlayState.CONTINUE;
                 }
-                return PlayState.CONTINUE;
+                else {
+                    event.getController().setAnimation(IDLE_ANIMATION);
+                    return PlayState.CONTINUE;
+                }
             } else {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("idle", true));
+                event.getController().setAnimation(IDLE_ANIMATION);
+                return PlayState.CONTINUE;
             }
-        }
-        return PlayState.CONTINUE;
     }
 
     @Override

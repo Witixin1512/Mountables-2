@@ -121,7 +121,6 @@ public class Mountables2Mod {
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
         PacketHandler.init();
         MovementRegistry.INSTANCE.load();
-
     }
 
     public static final RegistryObject<Item> MOUNTABLE_CORE = ITEM_REGISTER.register("mountable_core",
