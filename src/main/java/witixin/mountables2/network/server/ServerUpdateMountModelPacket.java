@@ -32,7 +32,7 @@ public class ServerUpdateMountModelPacket {
                         final MountableData previousData = mountable.getMountableData();
                         List<MountableData> dataList = level.getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE);
                         int index = dataList.indexOf(previousData);
-                        if (index == -1) throw new RuntimeException("Previous MountableData was not found in Server registry!");
+                        if (index == -1) throw new RuntimeException("Previous MountableData was not found in Server Registry!");
                         index += packet.position;
                         if (index == -1) index = dataList.size() - 1;
                         if (index == dataList.size()) index = 0;
