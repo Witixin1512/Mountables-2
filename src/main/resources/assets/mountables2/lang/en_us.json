@@ -11,7 +11,7 @@
   "gui.mountables2.ai.swim" : "Swim",
   "gui.mountables2.ai.walk" : "Walk",
   "gui.mountables2.ai.fly" : "Fly",
-  "gui.mountables2.ai_slow_walk" : "Slow Walk",
+  "gui.mountables2.ai.slow" : "Slow Walk",
   "gui.mountables2.ai.none" : "None",
   "gui.mountables2.ai.hop" : "Hop",
   "gui.mountables2.ai.float" : "Float",

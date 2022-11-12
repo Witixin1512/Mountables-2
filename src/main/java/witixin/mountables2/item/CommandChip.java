@@ -7,6 +7,7 @@ public class CommandChip extends Item {
     public CommandChip(Properties pProperties) {
         super(pProperties);
     }
+
     @Override
     public boolean canBeHurtBy(DamageSource pDamageSource) {
         return super.canBeHurtBy(pDamageSource) && !pDamageSource.isExplosion();

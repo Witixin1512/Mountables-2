@@ -1,37 +1,37 @@
 package witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.NetworkEvent;
 import witixin.mountables2.entity.Mountable;
 
-import java.util.UUID;
 import java.util.function.Supplier;
 
 public class ServerUpdateMountFollowTypePacket {
-    private final UUID uuid;
-    private final String followMode;
-    public ServerUpdateMountFollowTypePacket(UUID id, String followMode, String empty){
-        this.uuid = id;
+    private final int entityId;
+    private final byte followMode;
+
+    public ServerUpdateMountFollowTypePacket(int id, byte followMode) {
+        this.entityId = id;
         this.followMode = followMode;
     }
-    public static void handle(ServerUpdateMountFollowTypePacket packet, Supplier<NetworkEvent.Context> ctx){
-        ctx.get().enqueueWork(() ->
-                {
-                    ServerLevel level = ctx.get().getSender().getLevel();
-                    if (level.getEntity(packet.uuid) != null && level.getEntity(packet.uuid) instanceof Mountable mountable){
-                        mountable.setFollowMode(packet.followMode);
-                    }
+
+    public static void handle(ServerUpdateMountFollowTypePacket packet, Supplier<NetworkEvent.Context> context) {
+        context.get().enqueueWork(() -> {
+                    var level = context.get().getSender().level;
+                    if (level.getEntity(packet.entityId) instanceof Mountable mount)
+                        mount.setFollowMode(packet.followMode);
                 }
         );
-        ctx.get().setPacketHandled(true);
+        context.get().setPacketHandled(true);
     }
-    public void encode(FriendlyByteBuf buf){
-        buf.writeUUID(uuid);
-        buf.writeUtf(followMode);
+
+    public static ServerUpdateMountFollowTypePacket decode(FriendlyByteBuf buf) {
+        return new ServerUpdateMountFollowTypePacket(buf.readInt(), buf.readByte());
     }
-    public static ServerUpdateMountFollowTypePacket decode(FriendlyByteBuf buf){
-        return new ServerUpdateMountFollowTypePacket(buf.readUUID(), buf.readUtf(), "");
+
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeByte(followMode);
     }
 
 }

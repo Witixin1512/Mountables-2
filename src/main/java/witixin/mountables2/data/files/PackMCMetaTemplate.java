@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 public class PackMCMetaTemplate {
 
     /**
@@ -28,11 +29,11 @@ public class PackMCMetaTemplate {
     }
 
     public void writeIfNotExists() {
-        if(!mcmetaFile.exists()) {
-            try(final PrintWriter writer = new PrintWriter(new FileWriter(mcmetaFile))) {
+        if (!mcmetaFile.exists()) {
+            try (final PrintWriter writer = new PrintWriter(new FileWriter(mcmetaFile))) {
                 String content = template.getContent();
                 writer.println(content);
-            } catch(IOException e) {
+            } catch (IOException e) {
 
             }
         }

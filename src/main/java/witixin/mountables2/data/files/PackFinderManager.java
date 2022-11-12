@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 public class PackFinderManager {
 
     @SubscribeEvent
-    public static void addPacks(final AddPackFindersEvent event){
+    public static void addPacks(final AddPackFindersEvent event) {
         FileUtils.createPackFromTypeIfNotExists(event.getPackType());
         event.addRepositorySource(new MountablesRepositorySource(event.getPackType()));
     }
@@ -27,15 +27,19 @@ public class PackFinderManager {
 
         private final File rootFile;
 
-        private MountablesRepositorySource(PackType type){
+        private MountablesRepositorySource(PackType type) {
             this.rootFile = FileUtils.getConfigMountableFolder(type.getDirectory()).getParentFile().getParentFile();
         }
 
         @Override
         public void loadPacks(Consumer<Pack> pInfoConsumer, Pack.PackConstructor pInfoFactory) {
-            if (rootFile.exists()){
-                    Pack pack = Pack.create(Mountables2Mod.MODID + ":" + rootFile.getName(), true, () -> new FolderPackResources(rootFile){public boolean isHidden(){return true;}}, pInfoFactory, Pack.Position.BOTTOM, PackSource.DEFAULT);
-                    if (pack != null) pInfoConsumer.accept(pack);
+            if (rootFile.exists()) {
+                Pack pack = Pack.create(Mountables2Mod.MODID + ":" + rootFile.getName(), true, () -> new FolderPackResources(rootFile) {
+                    public boolean isHidden() {
+                        return true;
+                    }
+                }, pInfoFactory, Pack.Position.BOTTOM, PackSource.DEFAULT);
+                if (pack != null) pInfoConsumer.accept(pack);
             }
 
         }

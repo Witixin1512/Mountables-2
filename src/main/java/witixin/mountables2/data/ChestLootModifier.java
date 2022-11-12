@@ -25,15 +25,15 @@ public class ChestLootModifier extends LootModifier {
 
     private final int weight;
     private final List<ResourceLocation> resLocs;
+
     protected ChestLootModifier(LootItemCondition[] conditionsIn, int weight, List<String> resLocs) {
         super(conditionsIn);
         List<ResourceLocation> list = new ArrayList<>();
-        for (String s : resLocs){
+        for (String s : resLocs) {
             try {
                 ResourceLocation rl = new ResourceLocation(s);
                 list.add(rl);
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -44,13 +44,13 @@ public class ChestLootModifier extends LootModifier {
     @NotNull
     @Override
     protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context) {
-        if (resLocs.contains(context.getQueriedLootTableId())){
-             if (context.getRandom().nextDouble() * 100 <= weight){
+        if (resLocs.contains(context.getQueriedLootTableId())) {
+            if (context.getRandom().nextDouble() * 100 <= weight) {
                 generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
-                if (context.getRandom().nextDouble() <= 1.0/2){
+                if (context.getRandom().nextDouble() <= 1.0 / 2) {
                     generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
                 }
-                if (context.getRandom().nextDouble() <= 1.0/4){
+                if (context.getRandom().nextDouble() <= 1.0 / 4) {
                     generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
                 }
             }
@@ -63,7 +63,7 @@ public class ChestLootModifier extends LootModifier {
         public ChestLootModifier read(ResourceLocation name, JsonObject json, LootItemCondition[] conditionsIn) {
             int weight = GsonHelper.getAsInt(json, "weight");
             List<String> resLocs = new ArrayList<>();
-            GsonHelper.getAsJsonArray(json, "locations").forEach(jsonElement ->  resLocs.add(jsonElement.getAsString()));
+            GsonHelper.getAsJsonArray(json, "locations").forEach(jsonElement -> resLocs.add(jsonElement.getAsString()));
             return new ChestLootModifier(conditionsIn, weight, resLocs);
         }
 

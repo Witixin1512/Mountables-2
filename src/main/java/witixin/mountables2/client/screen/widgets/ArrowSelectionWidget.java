@@ -9,7 +9,6 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 
-
 public class ArrowSelectionWidget extends AbstractWidget {
 
     private final ResourceLocation toRender;
@@ -19,7 +18,7 @@ public class ArrowSelectionWidget extends AbstractWidget {
         this.toRender = image;
     }
 
-    public void updatePos(int pX, int pY){
+    public void updatePos(int pX, int pY) {
         this.x += pX;
         this.y += pY;
     }
@@ -29,7 +28,7 @@ public class ArrowSelectionWidget extends AbstractWidget {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, toRender);
-        this.blit(pPoseStack, this.x, this.y, 0, 0, this.width, this.height, this.width, this.height);
+        blit(pPoseStack, this.x, this.y, 0, 0, this.width, this.height, this.width, this.height);
     }
 
 

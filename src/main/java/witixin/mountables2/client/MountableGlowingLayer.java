@@ -13,10 +13,12 @@ public class MountableGlowingLayer extends LayerGlowingAreasGeo<Mountable> {
     public MountableGlowingLayer(GeoEntityRenderer<Mountable> renderer) {
         super(renderer, MountableGlowingLayer::getLayerLocation, MountableGlowingLayer::getModelLocation, RenderType::eyes);
     }
-    private static ResourceLocation getLayerLocation(Mountable mountable){
+
+    private static ResourceLocation getLayerLocation(Mountable mountable) {
         return Mountables2Mod.rl("textures/" + mountable.getEmissiveTexture() + ".png");
     }
-    private static ResourceLocation getModelLocation(Mountable mountable){
+
+    private static ResourceLocation getModelLocation(Mountable mountable) {
         return Mountables2Mod.rl("geo/" + mountable.getUniqueResourceLocation().getPath() + ".geo.json");
     }
 }

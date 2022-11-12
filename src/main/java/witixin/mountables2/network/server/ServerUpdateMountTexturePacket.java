@@ -12,27 +12,29 @@ public class ServerUpdateMountTexturePacket {
     private final UUID id;
     private final int position;
 
-    public ServerUpdateMountTexturePacket(UUID id, Integer index){
+    public ServerUpdateMountTexturePacket(UUID id, Integer index) {
         this.id = id;
         this.position = index;
     }
 
-    public void encode(FriendlyByteBuf buf) {
-        buf.writeUUID(id);
-        buf.writeInt(position);
-    }
-    public static ServerUpdateMountTexturePacket decode(FriendlyByteBuf buf){
+    public static ServerUpdateMountTexturePacket decode(FriendlyByteBuf buf) {
         return new ServerUpdateMountTexturePacket(buf.readUUID(), buf.readInt());
     }
-    public static void handle(ServerUpdateMountTexturePacket packet, Supplier<NetworkEvent.Context> ctx){
+
+    public static void handle(ServerUpdateMountTexturePacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
                 {
                     ServerLevel level = ctx.get().getSender().getLevel();
-                    if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable){
+                    if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable) {
                         mountable.setEmissiveTexture(packet.position);
                     }
                 }
         );
         ctx.get().setPacketHandled(true);
+    }
+
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeUUID(id);
+        buf.writeInt(position);
     }
 }

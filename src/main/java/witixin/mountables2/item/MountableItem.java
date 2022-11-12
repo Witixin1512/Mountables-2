@@ -18,31 +18,30 @@ public class MountableItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext pContext) {
-        if (!pContext.getLevel().isClientSide && pContext.getPlayer() != null){
+        if (!pContext.getLevel().isClientSide && pContext.getPlayer() != null) {
             final ItemStack stack = pContext.getItemInHand();
-            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().spawn((ServerLevel) pContext.getLevel(), null,null, null, pContext.getClickedPos(), MobSpawnType.SPAWN_EGG, true, true);
+            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().spawn((ServerLevel) pContext.getLevel(), null, null, null, pContext.getClickedPos(), MobSpawnType.SPAWN_EGG, true, true);
             mountable.setTame(true);
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
-            if (stack.getOrCreateTag().contains("MOUNTABLE")){
+            if (stack.getOrCreateTag().contains("MOUNTABLE")) {
                 final CompoundTag tagToRead = stack.getTag();
                 mountable.loadMountableData(Mountables2Mod.findData(tagToRead.getString("MOUNTABLE")));
-                mountable.setModelPosition(tagToRead.getInt("MODEL_POS"));
-                mountable.setAbsoluteEmissive(tagToRead.getInt("TEX_POS"));
-                if (tagToRead.contains("dead")){
+//                mountable.setModelPosition(tagToRead.getInt("MODEL_POS"));
+//                mountable.setAbsoluteEmissive(tagToRead.getInt("TEX_POS"));
+                if (tagToRead.contains("dead")) {
                     mountable.setHealth(1.0f);
                 }
-                if (tagToRead.contains("locked")){
-                    mountable.setLockSwitch(true);
+                if (tagToRead.contains("locked")) {
+//                    mountable.setLockSwitch(true);
                 }
-                if (tagToRead.contains("FOLLOW_MODE")){
-                    mountable.setFollowMode(tagToRead.getString("FOLLOW_MODE"));
-                    mountable.setFlightMode(tagToRead.getString("FLIGHT_MODE"));
-                    mountable.setFreeMode(tagToRead.getString("FREE_MODE"));
-                    mountable.setWaterMode(tagToRead.getString("WATER_MODE"));
-                    mountable.setGroundMode(tagToRead.getString("GROUND_MODE"));
+                if (tagToRead.contains("FOLLOW_MODE")) {
+//                    mountable.setFollowMode(tagToRead.getString("FOLLOW_MODE"));
+//                    mountable.setFlightMode(tagToRead.getString("FLIGHT_MODE"));
+//                    mountable.setFreeMode(tagToRead.getString("FREE_MODE"));
+//                    mountable.setWaterMode(tagToRead.getString("WATER_MODE"));
+//                    mountable.setGroundMode(tagToRead.getString("GROUND_MODE"));
                 }
-            }
-            else {
+            } else {
                 //NBT is either invalid or empty here.
                 mountable.loadMountableData(MountableManager.get().get(0));
             }

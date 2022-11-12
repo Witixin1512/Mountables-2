@@ -18,6 +18,9 @@ import java.util.Map;
 
 public class MountableManager extends SimpleJsonResourceReloadListener {
 
+    public static final int SWIM = 0;
+    public static final int WALK = 1;
+    public static final int FLY = 2;
     private static final Gson GSON = new Gson();
     private static List<MountableData> mountable_list = new ArrayList<>();
 
@@ -32,43 +35,48 @@ public class MountableManager extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
         mountable_list = new ArrayList<>();
-        for (ResourceLocation location : pObject.keySet()){
+        for (ResourceLocation location : pObject.keySet()) {
             try {
                 JsonObject obj = GsonHelper.convertToJsonObject(pObject.get(location), location.toString());
                 loadMountable(obj);
-            }
-            catch (Exception e ) {
+            } catch (Exception e) {
                 System.out.println("Error parsing mountable data for resource location: " + location.toString());
                 e.printStackTrace();
             }
         }
     }
-    private void loadMountable(JsonObject obj){
-        String s = GsonHelper.getAsString(obj, "unique_name");
 
-        JsonArray hitbox_dimensions = GsonHelper.getAsJsonArray(obj, "hitbox");
-        double d0 = hitbox_dimensions.get(0).getAsDouble();
-        double d1 = hitbox_dimensions.get(1).getAsDouble();
+    private void loadMountable(JsonObject obj) {
+        String getUniqueName = GsonHelper.getAsString(obj, "unique_name");
 
-        JsonArray d2 = GsonHelper.getAsJsonArray(obj, "riding_position");
-        double posX = d2.get(0).getAsDouble();
-        double posY = d2.get(1).getAsDouble();
-        double posZ = d2.get(2).getAsDouble();
+        JsonArray hitboxArray = GsonHelper.getAsJsonArray(obj, "hitbox");
+        double hitboxX = hitboxArray.get(0).getAsDouble();
+        double hitboxY = hitboxArray.get(1).getAsDouble();
+
+        JsonArray positionArray = GsonHelper.getAsJsonArray(obj, "riding_position");
+        Double[] riderPosition = new Double[3];
+        riderPosition[0] = positionArray.get(0).getAsDouble();
+        riderPosition[1] = positionArray.get(1).getAsDouble();
+        riderPosition[2] = positionArray.get(2).getAsDouble();
+
+        Boolean[] canMovement = new Boolean[3];
+        canMovement[SWIM] = GsonHelper.getAsBoolean(obj, "canSwim");
+        canMovement[FLY] = GsonHelper.getAsBoolean(obj, "canFly");
+        canMovement[WALK] = GsonHelper.getAsBoolean(obj, "canWalk");
 
         JsonArray emissive_textures = GsonHelper.getAsJsonArray(obj, "emissive_textures");
         List<String> list = new ArrayList<>();
         emissive_textures.forEach(jsonElement -> list.add(jsonElement.getAsString()));
 
-        boolean b3 = GsonHelper.getAsBoolean(obj, "canFly");
-        boolean b1 = GsonHelper.getAsBoolean(obj, "canSwim");
-        boolean b2 = GsonHelper.getAsBoolean(obj, "canWalk");
-
-
         String displayName = GsonHelper.getAsString(obj, "display_name");
-        JsonObject secondObject = GsonHelper.getAsJsonObject(obj, "attributes");
+        JsonObject jsonAttributesMap = GsonHelper.getAsJsonObject(obj, "attributes");
+
         Map<String, Double> attributeMap = new HashMap<>();
-        secondObject.entrySet().forEach(entry -> attributeMap.put(entry.getKey(), entry.getValue().getAsDouble()));
-        mountable_list.add(new MountableData(s.toLowerCase(), d0, d1, new Double[]{posX, posY, posZ}, list, new Boolean[]{b1, b2, b3}, displayName, attributeMap));
-        LogManager.getLogger("mountables2").info("Registered a new mountable under the name: " + s);
+        //preferably use a loop here, streams may be less effective with small itterations
+        for (Map.Entry<String, JsonElement> entries : jsonAttributesMap.entrySet())
+            attributeMap.put(entries.getKey(), entries.getValue().getAsDouble());
+
+        mountable_list.add(new MountableData(getUniqueName.toLowerCase(), hitboxX, hitboxY, riderPosition, list, canMovement, displayName, attributeMap));
+        LogManager.getLogger("mountables2").info("Registered a new mountable under the name: " + getUniqueName);
     }
 }

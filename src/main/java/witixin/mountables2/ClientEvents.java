@@ -11,12 +11,10 @@ import witixin.mountables2.client.MountableRenderer;
 public class ClientEvents {
 
 
-
     @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(Mountables2Mod.MOUNTABLE_ENTITY.get(), MountableRenderer::new);
     }
-
 
 
 }
