@@ -66,7 +66,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
 
-    private final AnimationFactory factory = new AnimationFactory(this);
+    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
     private MountableData mountableData;
     //Never set this value outside of setMajor()
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);

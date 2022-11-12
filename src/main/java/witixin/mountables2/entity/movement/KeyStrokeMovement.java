@@ -30,12 +30,8 @@ public record KeyStrokeMovement(boolean forwards, boolean backwards, boolean lef
     }
 
     public boolean isFrontal() {
-        return forwards;
-    }
-
-    public boolean isEmpty(){
-        return !(forwards && left && right && backwards && spacebar);
-    }
+        return forwards || backwards;
+    }   
 
     @Override
     public String toString() {
