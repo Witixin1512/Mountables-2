@@ -22,6 +22,7 @@ eclipse
 run
 run_server
 run_data
+runClientAlt
 
 # Files from Forge MDK
 forge*changelog.txt
@@ -31,3 +32,6 @@ LICENSE.txt
 README.txt
 CREDITS.txt
 changelog.txt
+
+stuff
+jumbo_rabbit

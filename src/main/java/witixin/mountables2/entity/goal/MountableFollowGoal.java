@@ -14,6 +14,6 @@ public class MountableFollowGoal extends FollowOwnerGoal {
 
     @Override
     public boolean canUse() {
-        return super.canUse() && mountable.getFollowMode() == (Mountable.FOLLOW);
+        return super.canUse() && mountable.getControllingPassenger() == null && mountable.getFollowMode() == (Mountable.FOLLOW);
     }
 }

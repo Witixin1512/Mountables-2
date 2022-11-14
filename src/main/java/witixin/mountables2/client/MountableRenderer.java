@@ -11,9 +11,11 @@ import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 import witixin.mountables2.entity.Mountable;
 
 public class MountableRenderer extends GeoEntityRenderer<Mountable> {
+
+    public static final MountableModel MODEL = new MountableModel();
+
     public MountableRenderer(EntityRendererProvider.Context renderManager) {
-        super(renderManager, new MountableModel());
-        //this.addLayer(new MountableLayer(this));
+        super(renderManager, MODEL);
         this.addLayer(new MountableGlowingLayer(this));
     }
 

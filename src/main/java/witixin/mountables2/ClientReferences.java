@@ -2,9 +2,10 @@ package witixin.mountables2;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import witixin.mountables2.client.screen.CommandChipScreen;
+import witixin.mountables2.client.screen.MountableAIScreen;
 
 public class ClientReferences {
 
@@ -24,7 +25,12 @@ public class ClientReferences {
         return get().options;
     }
 
-    public static void open(Screen screen) {
-        get().setScreen(screen);
+    public static void openAIScreen(int id) {
+        get().setScreen(new MountableAIScreen(id));
     }
+
+    public static void openCommandChipScreen(int id) {
+        get().setScreen(new CommandChipScreen(id));
+    }
+
 }

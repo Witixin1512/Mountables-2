@@ -1,7 +1,6 @@
 package witixin.mountables2.network.server;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import witixin.mountables2.entity.Mountable;
@@ -35,8 +34,7 @@ public class ServerHandleKeyPressMovement {
     public static void handle(ServerHandleKeyPressMovement packet, Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             ServerPlayer player = context.get().getSender();
-            ServerLevel level = player.getLevel();
-            if (player != null && player.isPassenger() && player.getVehicle() instanceof Mountable mount) {
+            if (player != null && player.getVehicle() instanceof Mountable mount) {
                 mount.setKeyStrokeMovement(packet.movement);
             }
         });

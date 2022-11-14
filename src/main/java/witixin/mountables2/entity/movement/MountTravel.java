@@ -2,16 +2,9 @@ package witixin.mountables2.entity.movement;
 
 import java.util.Objects;
 
-public class MountTravel {
-    private final Major major;
-    private final Minor minor;
-    private final MountMovement movement;
-
-    public MountTravel(Major major, Minor minor, MountMovement movement) {
-        this.major = major;
-        this.minor = minor;
-        this.movement = movement;
-    }
+public record MountTravel(Major major,
+                          Minor minor,
+                          MountMovement movement) {
 
     public static Minor from(String name) {
         try {
@@ -31,30 +24,32 @@ public class MountTravel {
         return o instanceof MountTravel other && other.major == major && other.minor == minor;
     }
 
-    public Major major() {
-        return major;
-    }
-
-    public Minor minor() {
-        return minor;
-    }
-
-    public MountMovement movement() {
-        return movement;
-    }
-
     @Override
     public String toString() {
         return "MountTravel[" +
                 "major=" + major + ", " +
-                "minor=" + minor + ", " +
-                "movement=" + movement + ']';
+                "minor=" + minor + "]";
     }
 
 
     public enum Major {
-        FLY, WALK, SWIM
+        FLY(true), WALK(false), SWIM(false);
+
+        private final boolean noGravity;
+
+        Major(boolean noGravity){
+            this.noGravity = noGravity;
+        }
+
+        public boolean isNoGravity() {
+            return noGravity;
+        }
     }
+
+    /**
+     * Minor movement types are modifiers that are applied to the various {@link Major} movement types.
+     * {@link Minor.NONE} implies that it should work normally, whereas the other types are intuitive.
+     */
 
     public enum Minor {
         HOP, SLOW, FLOAT, SINK, NONE

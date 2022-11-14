@@ -8,7 +8,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import witixin.mountables2.Mountables2Mod;
-import witixin.mountables2.data.MountableManager;
 import witixin.mountables2.entity.Mountable;
 
 public class MountableItem extends Item {
@@ -25,7 +24,7 @@ public class MountableItem extends Item {
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
             if (stack.getOrCreateTag().contains("MOUNTABLE")) {
                 final CompoundTag tagToRead = stack.getTag();
-                mountable.loadMountableData(Mountables2Mod.findData(tagToRead.getString("MOUNTABLE")));
+                mountable.loadMountableData(Mountables2Mod.findData(tagToRead.getString("MOUNTABLE"), pContext.getLevel().getServer()));
 //                mountable.setModelPosition(tagToRead.getInt("MODEL_POS"));
 //                mountable.setAbsoluteEmissive(tagToRead.getInt("TEX_POS"));
                 if (tagToRead.contains("dead")) {
@@ -43,7 +42,7 @@ public class MountableItem extends Item {
                 }
             } else {
                 //NBT is either invalid or empty here.
-                mountable.loadMountableData(MountableManager.get().get(0));
+                mountable.loadMountableData(((ServerLevel)pContext.getLevel()).getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE).get(0));
             }
             pContext.getPlayer().getItemInHand(pContext.getHand()).shrink(1);
         }

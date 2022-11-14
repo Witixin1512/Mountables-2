@@ -12,10 +12,18 @@ import net.minecraft.resources.ResourceLocation;
 public class ArrowSelectionWidget extends AbstractWidget {
 
     private final ResourceLocation toRender;
+    private final Runnable onPress;
 
-    public ArrowSelectionWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation image) {
+    public ArrowSelectionWidget(int pX, int pY, int pWidth, int pHeight, ResourceLocation image, Runnable onButtonPress) {
         super(pX, pY, pWidth, pHeight, new TextComponent("arrow_selector"));
         this.toRender = image;
+        this.onPress = onButtonPress;
+    }
+
+    @Override
+    public void onClick(double pMouseX, double pMouseY) {
+
+        onPress.run();
     }
 
     public void updatePos(int pX, int pY) {

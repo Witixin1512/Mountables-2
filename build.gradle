@@ -15,7 +15,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.18.2'
-version = mc_version + '-1.0.4'
+version = mc_version + '-BETA-1.0.0'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -33,7 +33,20 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            args '--username', 'Dev'
+            args '--username', 'Dev2'
+            mods {
+                mountables2 {
+                    source sourceSets.main
+                }
+            }
+        }
+        client {
+            workingDirectory project.file('runClientAlt')
+            setTaskName("runClientAlt")
+            properties 'mixin.env.remapRefMap': 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
             mods {
                 mountables2 {
                     source sourceSets.main
@@ -46,7 +59,7 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-
+            args '--singleplayer', 'true', '--nogui', 'nogui'
             mods {
                 mountables2 {
                     source sourceSets.main
@@ -98,7 +111,7 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.35')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.54')
     runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.4.1.113")
 }
 
