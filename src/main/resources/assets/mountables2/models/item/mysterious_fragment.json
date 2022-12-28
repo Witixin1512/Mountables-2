@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "mountables2:mysterious_fragment"
+    "layer0": "mountables2:item/mysterious_fragment"
   }
 }
