@@ -1,5 +1,6 @@
 package witixin.mountables2.entity;
 
+import net.minecraft.client.player.KeyboardInput;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -14,7 +15,7 @@ import witixin.mountables2.network.server.ServerHandleKeyPressMovement;
 public class ClientEventListenToMovement {
 
     @SubscribeEvent
-    public static void keyPressListener(InputEvent.KeyInputEvent event) {
+    public static void keyPressListener(final InputEvent.Key event) {
         if (ClientReferences.getClientPlayer() != null && ClientReferences.getClientPlayer().isPassenger() && ClientReferences.getClientPlayer().getVehicle() instanceof Mountable mount) {
             boolean forwards = ClientReferences.getOptions().keyUp.isDown();
             boolean backwards = ClientReferences.getOptions().keyDown.isDown();

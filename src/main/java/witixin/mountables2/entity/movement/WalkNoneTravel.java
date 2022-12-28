@@ -12,10 +12,11 @@ public class WalkNoneTravel implements MountMovement {
     @Override
     public Vec3 travel(Mountable mount, Vec3 travelVector) {
         Vec3 mod = travelVector;
-
+        final KeyStrokeMovement keyStrokeMovement = mount.getKeyStrokeMovement();
         //set flying mod if the mount is airborne, has not landed again, and the key has been let go
-        if (!mount.isOnGround() && airborne && !jumpOld && !mount.level.isClientSide) {
+        if (!mount.isOnGround() && airborne && !jumpOld && !mount.level.isClientSide && keyStrokeMovement.spacebar()) {
             mount.setFlying(true);
+            return mod;
         }
         //only rejump if the key has been let go
 
@@ -25,11 +26,11 @@ public class WalkNoneTravel implements MountMovement {
             }
             if (mount.getKeyStrokeMovement().spacebar() && !airborne){
                 jumpOld = airborne = true;
-                mod = new Vec3(mod.x, mount.getAttributeValue(Attributes.JUMP_STRENGTH), mod.z);
+                mod = new Vec3(0, mount.getAttributeValue(Attributes.JUMP_STRENGTH), 0);
                 mount.setOnGround(false);
             }
         }
-        jumpOld = mount.getKeyStrokeMovement().spacebar();
+        jumpOld = keyStrokeMovement.spacebar();
         return mod;
     }
 

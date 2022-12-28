@@ -1,9 +1,7 @@
 package witixin.mountables2.entity;
 
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,15 +19,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.data.MountableData;
@@ -42,7 +35,7 @@ import witixin.mountables2.entity.movement.MovementRegistry;
 
 import java.util.Map;
 
-public class Mountable extends TamableAnimal implements IAnimatable {
+public class Mountable extends TamableAnimal implements GeoAnimatable {
 
     public static final EntityDataAccessor<Float> ENTITY_WIDTH = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<Float> ENTITY_HEIGHT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.FLOAT);
@@ -67,7 +60,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
 
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private MountableData mountableData;
     //Never set this value outside of setMajor()
     private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
@@ -76,7 +69,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
 
     private int hopTimer;
 
-    public Mountable(EntityType type, Level level) {
+    public Mountable(EntityType<? extends Mountable> type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
         dimensions = getDimensions(Pose.STANDING); //pose
         setMajor(getMajor());
@@ -131,11 +124,6 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.set(AIRBOURNE, flag);
     }
 
-    @Override
-    public boolean canBeControlledByRider() {
-        return true;
-    }
-
     public String getEmissiveTexture() {
         return this.entityData.get(EMISSIVE_TEXTURE);
     }
@@ -160,7 +148,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.mountableData = data;
         this.setUniqueName(data.uniqueName());
         this.setCustomNameVisible(true);
-        this.setCustomName(new TextComponent(data.displayName()));
+        this.setCustomName(Component.literal(data.displayName()));
         this.processAttributes(data.attributeMap());
         this.updateMovementAbilities();
         this.entityData.set(ENTITY_WIDTH, (float) data.width());
@@ -221,7 +209,8 @@ public class Mountable extends TamableAnimal implements IAnimatable {
                 ClientReferences.openCommandChipScreen(getId());
                 return InteractionResult.sidedSuccess(true);
             } else {
-                pPlayer.sendMessage(new TranslatableComponent("msg.mountables2.chip.owner"), Util.NIL_UUID);
+                //TODO Check if sendSystemMEssage == sendmessage
+                pPlayer.sendSystemMessage(Component.translatable("msg.mountables2.chip.owner"));
                 return InteractionResult.FAIL;
             }
 
@@ -239,7 +228,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         Vec3 newvector = pTravelVector;
 
         if (isAlive()) {
-            if (isVehicle() && canBeControlledByRider() && getFirstPassenger() instanceof LivingEntity rider) {
+            if (isVehicle() && getFirstPassenger() instanceof LivingEntity rider) {
                 rotateBodyTo(rider);
                 /********************handle rotation and moving forward************************/
                 double deltaX = 0, deltaY = 0, deltaZ = 0;
@@ -326,6 +315,7 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         return EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
     }
 
+    /*
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(new AnimationController<>(this, "controller", 5, this::predicate));
@@ -366,6 +356,9 @@ public class Mountable extends TamableAnimal implements IAnimatable {
     public AnimationFactory getFactory() {
         return factory;
     }
+
+
+     */
 
     @Override
     protected void defineSynchedData() {
@@ -464,7 +457,18 @@ public class Mountable extends TamableAnimal implements IAnimatable {
         this.entityData.set(HOP_TIMER, amount);
     }
 
-    public void raiseHopTimer(){
-        setHopTimer(getHopTimer() + 1);
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
+    }
+
+    @Override
+    public double getTick(Object object) {
+        return age;
     }
 }

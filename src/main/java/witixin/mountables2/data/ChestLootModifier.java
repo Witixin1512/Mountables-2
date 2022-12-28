@@ -1,21 +1,34 @@
 package witixin.mountables2.data;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.loot.LootModifier;
 import org.jetbrains.annotations.NotNull;
 import witixin.mountables2.Mountables2Mod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChestLootModifier extends LootModifier {
+
+    public static final Codec<ChestLootModifier> CODEC = RecordCodecBuilder.create(instance ->
+            codecStart(instance)
+                    .and(instance.group(
+                            Codec.INT.fieldOf("weight").forGetter(thing -> thing.weight),
+                            Codec.list(Codec.STRING).fieldOf("locations").xmap(
+                                    stringList -> stringList.stream().map(ResourceLocation::new).collect(Collectors.toList()),
+                                    rlList -> rlList.stream().map(ResourceLocation::toString).collect(Collectors.toList())
+
+                            ).forGetter(thing -> thing.resLocs)
+                    )).apply(instance, ChestLootModifier::new));
+
 
     /**
      * Constructs a LootModifier.
@@ -26,24 +39,15 @@ public class ChestLootModifier extends LootModifier {
     private final int weight;
     private final List<ResourceLocation> resLocs;
 
-    protected ChestLootModifier(LootItemCondition[] conditionsIn, int weight, List<String> resLocs) {
+    protected ChestLootModifier(LootItemCondition[] conditionsIn, int weight, List<ResourceLocation> resLocs) {
         super(conditionsIn);
-        List<ResourceLocation> list = new ArrayList<>();
-        for (String s : resLocs) {
-            try {
-                ResourceLocation rl = new ResourceLocation(s);
-                list.add(rl);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        this.resLocs = list;
+        this.resLocs = resLocs;
         this.weight = weight;
     }
 
     @NotNull
     @Override
-    protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context) {
+    protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
         if (resLocs.contains(context.getQueriedLootTableId())) {
             if (context.getRandom().nextDouble() * 100 <= weight) {
                 generatedLoot.add(Mountables2Mod.MYSTERIOUS_FRAGMENT.get().getDefaultInstance());
@@ -58,23 +62,9 @@ public class ChestLootModifier extends LootModifier {
         return generatedLoot;
     }
 
-    public static class ChestLootModifierSerializer extends GlobalLootModifierSerializer<ChestLootModifier> {
-        @Override
-        public ChestLootModifier read(ResourceLocation name, JsonObject json, LootItemCondition[] conditionsIn) {
-            int weight = GsonHelper.getAsInt(json, "weight");
-            List<String> resLocs = new ArrayList<>();
-            GsonHelper.getAsJsonArray(json, "locations").forEach(jsonElement -> resLocs.add(jsonElement.getAsString()));
-            return new ChestLootModifier(conditionsIn, weight, resLocs);
-        }
-
-        @Override
-        public JsonObject write(ChestLootModifier instance) {
-            JsonObject toReturn = makeConditions(instance.conditions);
-            toReturn.addProperty("weight", instance.weight);
-            JsonArray array = new JsonArray(instance.resLocs.size());
-            instance.resLocs.forEach(element -> array.add(element.toString()));
-            toReturn.add("locations", array);
-            return toReturn;
-        }
+    @Override
+    public Codec<? extends IGlobalLootModifier> codec() {
+        return Mountables2Mod.GLM.get();
     }
+
 }

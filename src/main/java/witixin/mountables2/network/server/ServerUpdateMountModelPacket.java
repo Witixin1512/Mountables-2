@@ -30,7 +30,7 @@ public class ServerUpdateMountModelPacket {
                     ServerLevel level = ctx.get().getSender().getLevel();
                     if (level.getEntity(packet.id) != null && level.getEntity(packet.id) instanceof Mountable mountable) {
                         final MountableData previousData = mountable.getMountableData();
-                        List<MountableData> dataList = level.getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE);
+                        List<MountableData> dataList = level.getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE.get());
                         int index = dataList.indexOf(previousData);
                         if (index == -1) throw new RuntimeException("Previous MountableData was not found in Server Registry!");
                         index += packet.position;

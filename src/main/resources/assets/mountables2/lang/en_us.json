@@ -25,6 +25,8 @@
   "gui.mountables2.chip.follow" : "Follow",
 
   "gui.mountables2.chip.model" : "Model",
-  "gui.mountables2.chip.texture" : "Texture"
+  "gui.mountables2.chip.texture" : "Texture",
+
+  "gui.mountables2.pack_name" : "Mountables2 Built In %s pack"
 
 }

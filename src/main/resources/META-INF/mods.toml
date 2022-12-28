@@ -1,11 +1,11 @@
 modLoader="javafml" #mandatory
-loaderVersion="[40,)"
+loaderVersion="[44,)"
 license="MIT License"
 [[mods]]
 modId="mountables2"
 version="${file.jarVersion}"
 displayName="Mountables 2"
-authors="Witixin, TheUltimateGuy" #optional
+authors="Witixin, VoutVouniern" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 A mod that adds an entity, a Mountable, and a couple of items! The Mountable is an entity with a model that the player is able to ride and acts as a tamed entity while not ridden. 
@@ -15,18 +15,18 @@ A resourcepack can be used to add custom models and textures into the game. For 
 [[dependencies.mountables2]]
     modId="forge"
     mandatory=true
-    versionRange="[40.0.45,)"
+    versionRange="[44.0.41,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.mountables2]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.2,1.19)"
+    versionRange="[1.19.3,1.20)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.mountables2]]
-    modId="geckolib3"
+    modId="geckolib"
     mandatory=true
-    versionRange="[3.0.13, )"
+    versionRange="[4.0.2, )"
     ordering="NONE"
     side="BOTH"

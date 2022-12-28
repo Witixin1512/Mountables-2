@@ -7,7 +7,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.jetbrains.annotations.Nullable;
 import witixin.mountables2.Mountables2Mod;
 
@@ -16,19 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MountableSerializer extends ForgeRegistryEntry<RecipeSerializer<?>>  implements RecipeSerializer<MountableData> {
+public class MountableSerializer implements RecipeSerializer<MountableData> {
 
     public static final int SWIM = 0;
     public static final int WALK = 1;
     public static final int FLY = 2;
-
-    public static List<MountableData> dataList = new ArrayList<>();
-
-    public MountableSerializer(){
-        this.setRegistryName(new ResourceLocation(Mountables2Mod.MODID,"custom_mountables"));
-    }
-
-
     @Override
     public MountableData fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
 

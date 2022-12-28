@@ -3,7 +3,7 @@ package witixin.mountables2.client.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.client.screen.widgets.ArrowSelectionWidget;
@@ -27,7 +27,7 @@ public class CommandChipScreen extends Screen {
     public final int entityId;
 
     public CommandChipScreen(int mountId) {
-        super(new TextComponent("commandchipscreen"));
+        super(Component.literal("commandchipscreen"));
         this.entityId = mountId;
         if (Minecraft.getInstance().level.getEntity(entityId) instanceof Mountable mount)
             this.mount = mount;

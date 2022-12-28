@@ -29,8 +29,6 @@ import java.util.Objects;
  */
 public record MountableData(ResourceLocation recipeName, String uniqueName, double width, double height, Double[] position, List<String> emissiveTextures, Boolean[] aiModes, String displayName, Map<String, Double> attributeMap) implements Recipe<Container> {
 
-    public static final MountableSerializer MOUNTABLE_SERIALIZER = new MountableSerializer();
-
     @Override
     public String toString() {
         return "MountableData[ " + uniqueName + ", Hitbox: " + width + " , " + height + " Position: " + Arrays.toString(position) + " EmissiveTextures: " + Arrays.toString(emissiveTextures.toArray(emissiveTextures().toArray(new String[emissiveTextures.size()]))) + " AI Modes: " + Arrays.toString(aiModes) + " Display Name: " + displayName + "Attributes: " + attributeMap.toString();
@@ -63,12 +61,12 @@ public record MountableData(ResourceLocation recipeName, String uniqueName, doub
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return MOUNTABLE_SERIALIZER;
+        return Mountables2Mod.MOUNTABLE_RECIPE_SERAILIZER.get();
     }
 
     @Override
     public RecipeType<?> getType() {
-        return Mountables2Mod.MOUNTABLE_RECIPE_TYPE;
+        return Mountables2Mod.MOUNTABLE_RECIPE_TYPE.get();
     }
 
     @Override

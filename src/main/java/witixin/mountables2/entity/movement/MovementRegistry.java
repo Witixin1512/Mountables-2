@@ -77,7 +77,6 @@ public enum MovementRegistry {
                 double up = travelVector.y < 0.2 ? 0.01f : -0.01;
                 travelVector = travelVector.add(0, up + modifier , 0);
             }
-            Entity rider = mount.getControllingPassenger();
             return travelVector;
         }));
 

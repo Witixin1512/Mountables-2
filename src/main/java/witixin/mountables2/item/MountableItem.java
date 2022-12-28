@@ -19,7 +19,7 @@ public class MountableItem extends Item {
     public InteractionResult useOn(UseOnContext pContext) {
         if (!pContext.getLevel().isClientSide && pContext.getPlayer() != null) {
             final ItemStack stack = pContext.getItemInHand();
-            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().spawn((ServerLevel) pContext.getLevel(), null, null, null, pContext.getClickedPos(), MobSpawnType.SPAWN_EGG, true, true);
+            final Mountable mountable = Mountables2Mod.MOUNTABLE_ENTITY.get().spawn((ServerLevel) pContext.getLevel(), pContext.getClickedPos().above(), MobSpawnType.SPAWN_EGG);
             mountable.setTame(true);
             mountable.setOwnerUUID(pContext.getPlayer().getUUID());
             if (stack.getOrCreateTag().contains("MOUNTABLE")) {
@@ -42,7 +42,7 @@ public class MountableItem extends Item {
                 }
             } else {
                 //NBT is either invalid or empty here.
-                mountable.loadMountableData(((ServerLevel)pContext.getLevel()).getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE).get(0));
+                mountable.loadMountableData(((ServerLevel)pContext.getLevel()).getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE.get()).get(0));
             }
             pContext.getPlayer().getItemInHand(pContext.getHand()).shrink(1);
         }
