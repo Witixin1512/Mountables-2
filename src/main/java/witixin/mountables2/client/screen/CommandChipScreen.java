@@ -29,8 +29,8 @@ public class CommandChipScreen extends Screen {
     public CommandChipScreen(int mountId) {
         super(Component.literal("commandchipscreen"));
         this.entityId = mountId;
-        if (Minecraft.getInstance().level.getEntity(entityId) instanceof Mountable mount)
-            this.mount = mount;
+        if (Minecraft.getInstance().level.getEntity(entityId) instanceof Mountable newMount)
+            this.mount = newMount;
     }
 
     @Override
@@ -53,15 +53,12 @@ public class CommandChipScreen extends Screen {
 
         final SwitchableWidget WANDER = new SwitchableWidget(0, 0, 100, 20, I18n.get("gui.mountables2.chip.wander"),  pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.WANDER));
-            mount.setFollowMode(Mountable.WANDER);
         });
         final SwitchableWidget STAY = new SwitchableWidget(0, 40, 100, 20, I18n.get("gui.mountables2.chip.stay"),  pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.STAY));
-            mount.setFollowMode(Mountable.STAY);
         });
         final SwitchableWidget FOLLOW = new SwitchableWidget(0, 80, 100, 20, I18n.get("gui.mountables2.chip.follow"), pButton -> {
             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountFollowTypePacket(entityId, Mountable.FOLLOW));
-            mount.setFollowMode(Mountable.FOLLOW);
         });
 
         SwitchableWidget[] selectable = new SwitchableWidget[3];

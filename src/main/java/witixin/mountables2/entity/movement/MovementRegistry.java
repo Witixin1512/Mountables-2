@@ -38,12 +38,9 @@ public enum MovementRegistry {
     }
 
     public void load() {
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkNoneTravel()));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkNoneTravel(1.0)));
 
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, (mount, travelVector) ->
-        {
-            return travelVector;
-        }));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, new WalkNoneTravel(0.5)));
 
         /*
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, (mount, travelVector) -> {

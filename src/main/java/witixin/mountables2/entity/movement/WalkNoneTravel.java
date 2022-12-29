@@ -9,6 +9,12 @@ public class WalkNoneTravel implements MountMovement {
     boolean airborne = false;
     boolean jumpOld = false;
 
+    private final double speedCoeficient;
+
+    public WalkNoneTravel(double coeficient) {
+        this.speedCoeficient = coeficient;
+    }
+
     @Override
     public Vec3 travel(Mountable mount, Vec3 travelVector) {
         Vec3 mod = travelVector;
@@ -20,15 +26,24 @@ public class WalkNoneTravel implements MountMovement {
         }
         //only rejump if the key has been let go
 
+        final double jumpStrength = mount.getAttributeValue(Attributes.JUMP_STRENGTH);
+
+        //We want to jump,
         if (mount.isOnGround()){
             if (airborne){
                 airborne = false;
             }
             if (mount.getKeyStrokeMovement().spacebar() && !airborne){
-                jumpOld = airborne = true;
-                mod = new Vec3(0, mount.getAttributeValue(Attributes.JUMP_STRENGTH), 0);
+                airborne = true;
+                mod = new Vec3(0, jumpStrength, 0);
                 mount.setOnGround(false);
             }
+            //If we're moving, either jumping or moving, scale by speedCoeficient, which is 1 in regular walk and 0.5 in slow walk
+            mod.multiply(speedCoeficient, 1.0, speedCoeficient);
+        }
+        else {
+            //If we're jumping, drop speed by a bit
+            mod = mod.multiply(jumpStrength / 4, 1.0, jumpStrength / 4);
         }
         jumpOld = keyStrokeMovement.spacebar();
         return mod;

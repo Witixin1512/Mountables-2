@@ -46,12 +46,14 @@ public class MountableAIScreen extends CommandChipScreen {
                             this.mount.setMinorMovement(travel.major(), travel.minor());
                             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.major(), travel.minor()));
                         });
-                widget.setEnabled(mount.getMinorMovement(major).equals(travel.minor()));//enable widget if the set minor is the one from the widget
+                final MountTravel.Minor mountMinor = mount.getMinorMovement(major);
+                final boolean enabled = mountMinor.equals(travel.minor());
+                widget.setEnabled(enabled);//enable widget if the set minor is the one from the widget
                 minors.add(widget);
                 row++;
             }
             row = 0;
-            //add a linked widget with all buttons for the major of this iteration to the screne
+            //add a linked widget with all buttons for the major of this iteration to the screen
             this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), 0, 80, 30 * minors.size(), (byte) 0, minors.toArray(new SwitchableWidget[0])));
             column++;
         }

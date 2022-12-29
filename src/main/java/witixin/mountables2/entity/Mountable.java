@@ -111,6 +111,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     public void setMajor(MountTravel.Major major, MountTravel.Minor minor){
         if (!this.level.isClientSide){
             this.entityData.set(MAJOR_MOVEMENT, major.name());
+            this.entityData.set(getEDAForMinor(major), minor.name());
             setNoGravity(major.isNoGravity());
         }
         currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
