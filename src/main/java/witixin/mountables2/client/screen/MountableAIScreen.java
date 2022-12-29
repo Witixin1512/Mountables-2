@@ -46,6 +46,7 @@ public class MountableAIScreen extends CommandChipScreen {
                             this.mount.setMinorMovement(travel.major(), travel.minor());
                             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.major(), travel.minor()));
                         });
+                //This doesn't work: Why?
                 final MountTravel.Minor mountMinor = mount.getMinorMovement(major);
                 final boolean enabled = mountMinor.equals(travel.minor());
                 widget.setEnabled(enabled);//enable widget if the set minor is the one from the widget
