@@ -1,17 +1,19 @@
-package witixin.mountables2.entity.movement;
+package witixin.mountables2.entity.movement.travel;
 
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.movement.KeyStrokeMovement;
+import witixin.mountables2.entity.movement.MountMovement;
 
-public class WalkNoneTravel implements MountMovement {
+public class WalkTravel implements MountMovement {
 
     boolean airborne = false;
     boolean jumpOld = false;
 
     private final double speedCoeficient;
 
-    public WalkNoneTravel(double coeficient) {
+    public WalkTravel(double coeficient) {
         this.speedCoeficient = coeficient;
     }
 

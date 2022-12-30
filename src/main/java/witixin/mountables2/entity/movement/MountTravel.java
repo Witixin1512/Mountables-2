@@ -1,7 +1,6 @@
 package witixin.mountables2.entity.movement;
 
 import org.apache.logging.log4j.LogManager;
-import witixin.mountables2.Mountables2Mod;
 
 import java.util.Objects;
 

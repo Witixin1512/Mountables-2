@@ -1,11 +1,11 @@
 package witixin.mountables2.entity.movement;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.movement.travel.HopTravel;
+import witixin.mountables2.entity.movement.travel.WalkTravel;
 
 import java.util.HashSet;
 import java.util.List;
@@ -38,41 +38,21 @@ public enum MovementRegistry {
     }
 
     public void load() {
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkNoneTravel(1.0)));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkTravel(1.0)));
 
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, new WalkNoneTravel(0.5)));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, new WalkTravel(0.5)));
 
-        /*
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, (mount, travelVector) -> {
-            if (mount.isOnGround()){
-                int timer = mount.getHopTimer();
-                if (!mount.level.isClientSide){
-                    mount.raiseHopTimer();
-                }
-                if (timer >= LAND_HOP_TIMER && (travelVector.x != 0.0 || travelVector.z != 0.0 || mount.getKeyStrokeMovement().spacebar())){
-                    if (!mount.level.isClientSide){
-                        mount.setHopTimer(LAND_HOP_TIMER);
-                    }
-                    travelVector = doSlimeJump(mount,  mount.getAttributeBaseValue(Attributes.JUMP_STRENGTH));
-                }
-                if (timer != 0){
-                    travelVector = Vec3.ZERO;
-                }
-            }
-            return travelVector;
-        }));
-
-         */
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, new HopTravel()));
 
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (mount, travelVector) ->
         {
             double modifier = VERTICAL_COEFICIENT;
-            if (mount.getControllingPassenger() instanceof Player player){
+            if (mount.getControllingPassenger() instanceof Player player) {
                 modifier *= player.getLookAngle().y;
             }
             if (mount.getKeyStrokeMovement().spacebar()) {
                 double up = travelVector.y < 0.2 ? 0.01f : -0.01;
-                travelVector = travelVector.add(0, up + modifier , 0);
+                travelVector = travelVector.add(0, up + modifier, 0);
             }
             return travelVector;
         }));
@@ -83,11 +63,4 @@ public enum MovementRegistry {
             return travelVector;
         }));
     }
-
-    private Vec3 doSlimeJump(Mountable mountable, double yScale) {
-        Vec3 vector3d = mountable.getDeltaMovement();
-        float f2 = Mth.sin(mountable.getYRot() * ((float)Math.PI / 180F));
-        float f3 = Mth.cos(mountable.getYRot() * ((float)Math.PI / 180F));
-        return (vector3d.add((f2 * -yScale), yScale, (f3 * yScale)));
-        }
-    }
+}

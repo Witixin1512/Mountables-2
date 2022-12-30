@@ -52,8 +52,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     public static final EntityDataAccessor<Boolean> CAN_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> CAN_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
 
-    public static final EntityDataAccessor<Integer> HOP_TIMER = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.INT);
-
     public static final byte FOLLOW = 0;
     public static final byte WANDER = 1;
     public static final byte STAY = 2;
@@ -377,7 +375,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         this.entityData.define(CAN_FLY, false);
         this.entityData.define(CAN_WALK, false);
         this.entityData.define(CAN_SWIM, false);
-        this.entityData.define(HOP_TIMER, -1);
     }
 
     @Override
@@ -400,8 +397,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         tag.putBoolean("can_fly", this.canFly());
         tag.putBoolean("can_walk", this.canWalk());
         tag.putBoolean("can_swim", this.canSwim());
-
-        tag.putInt("hop_timer", this.getHopTimer());
     }
 
     @Override
@@ -421,7 +416,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         this.entityData.set(CAN_FLY, tag.getBoolean("can_fly"));
         this.entityData.set(CAN_WALK, tag.getBoolean("can_walk"));
         this.entityData.set(CAN_SWIM, tag.getBoolean("can_swim"));
-        this.entityData.set(HOP_TIMER, tag.getInt("hop_timer"));
     }
 
 
@@ -448,14 +442,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
 
     public KeyStrokeMovement getKeyStrokeMovement() {
         return keyStrokeMovement;
-    }
-
-    public int getHopTimer() {
-        return entityData.get(HOP_TIMER);
-    }
-
-    public void setHopTimer(int amount){
-        this.entityData.set(HOP_TIMER, amount);
     }
 
     @Override
