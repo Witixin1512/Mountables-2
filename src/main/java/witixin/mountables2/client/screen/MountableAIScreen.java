@@ -2,6 +2,7 @@ package witixin.mountables2.client.screen;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
 import witixin.mountables2.client.screen.widgets.LinkedSwitchableWidget;
 import witixin.mountables2.client.screen.widgets.SwitchableWidget;
@@ -12,6 +13,7 @@ import witixin.mountables2.network.server.ServerUpdateMinorMovement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MountableAIScreen extends CommandChipScreen {
 
@@ -38,24 +40,26 @@ public class MountableAIScreen extends CommandChipScreen {
             List<SwitchableWidget> minors = new ArrayList<>();
 
             for (MountTravel travel : MovementRegistry.INSTANCE.getMajorMovement(major)) {
+
+                final MountTravel.Minor mountMinor = mount.getMinorMovement(major);
+                final boolean enabled = mountMinor.equals(travel.minor());
+
                 SwitchableWidget widget = new SwitchableWidget(
                         0, 50 + (30 * row), //position
                         80, 20, //size
                         I18n.get(String.format("gui.mountables2.ai.%s", travel.minor().name().toLowerCase())),
                         pButton -> {
-                            this.mount.setMinorMovement(travel.major(), travel.minor());
                             PacketHandler.INSTANCE.sendToServer(new ServerUpdateMinorMovement(entityId, travel.major(), travel.minor()));
+                            this.mount.setMinorMovement(travel.major(), travel.minor());
+                            pButton.setEnabled(true);
                         });
-                //This doesn't work: Why?
-                final MountTravel.Minor mountMinor = mount.getMinorMovement(major);
-                final boolean enabled = mountMinor.equals(travel.minor());
                 widget.setEnabled(enabled);//enable widget if the set minor is the one from the widget
                 minors.add(widget);
                 row++;
             }
             row = 0;
             //add a linked widget with all buttons for the major of this iteration to the screen
-            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), 0, 80, 30 * minors.size(), (byte) 0, minors.toArray(new SwitchableWidget[0])));
+            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), 0, 80, 30 * minors.size(), minors.toArray(new SwitchableWidget[0])));
             column++;
         }
 

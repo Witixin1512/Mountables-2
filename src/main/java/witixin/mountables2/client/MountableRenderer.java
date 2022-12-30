@@ -12,6 +12,7 @@ import software.bernie.geckolib.cache.texture.AutoGlowingTexture;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.entity.Mountable;
 
@@ -27,18 +28,17 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
     }
 
 
-    private static class MountableRenderLayer extends AutoGlowingGeoLayer<Mountable> {
+    private static class MountableRenderLayer extends GeoRenderLayer<Mountable> {
 
         public MountableRenderLayer(GeoRenderer<Mountable> renderer) {
             super(renderer);
         }
 
-        @Override
         @Nullable
         protected RenderType getRenderType(Mountable animatable) {
             String location = animatable.getEmissiveTexture();
             if (location.equals("transparent")) return null;
-            return AutoGlowingTexture.getRenderType(Mountables2Mod.rl("textures/" + location + ".png"));
+            return RenderType.eyes(Mountables2Mod.rl("textures/" + location + ".png"));
         }
 
         @Override

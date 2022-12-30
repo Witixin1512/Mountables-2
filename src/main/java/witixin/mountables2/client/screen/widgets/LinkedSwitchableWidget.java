@@ -11,19 +11,16 @@ public class LinkedSwitchableWidget extends AbstractWidget {
 
     private SwitchableWidget selectedWidget;
     private SwitchableWidget[] widgets;
-    private byte selected;
 
-    public LinkedSwitchableWidget(int pX, int pY, int pWidth, int pHeight, byte selected, SwitchableWidget... widgets) {
+    public LinkedSwitchableWidget(int pX, int pY, int pWidth, int pHeight, SwitchableWidget... widgets) {
         super(pX, pY, pWidth, pHeight, Component.literal("linked_switchable_widget"));
-        selectedWidget = widgets[selected];
         this.widgets = widgets;
-        this.selected = selected;
-        Arrays.stream(widgets).forEach(switchableWidget -> {
-            if (getY() == 0)
+
+        for (SwitchableWidget switchableWidget : widgets) {
+            if (this.getY() == 0)
                 this.setY(switchableWidget.getY()); //Set y position of the SLW to the Y value of the first button in the list, must the button determine the height and not the LSW
             switchableWidget.updatePos(pX, pY);
-            switchableWidget.setEnabled(widgets[selected].equals(switchableWidget));
-        });
+        }
     }
 
     @Override

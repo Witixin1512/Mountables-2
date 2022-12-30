@@ -62,11 +62,19 @@ public class CommandChipScreen extends Screen {
         });
 
         SwitchableWidget[] selectable = new SwitchableWidget[3];
+
+        switch (mount.getFollowMode()) {
+            case Mountable.FOLLOW -> FOLLOW.setEnabled(true);
+            case Mountable.WANDER -> WANDER.setEnabled(true);
+            case Mountable.STAY -> STAY.setEnabled(true);
+            default -> System.out.println("Invalid or unregistered follow mode detected! ");
+        }
+
         selectable[Mountable.FOLLOW] = FOLLOW;
         selectable[Mountable.WANDER] = WANDER;
         selectable[Mountable.STAY] = STAY;
 
-        this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - 50, posY / 2 - 100 , 100, 35 * selectable.length, mount.getFollowMode(), selectable));
+        this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - 50, posY / 2 - 100 , 100, 35 * selectable.length, selectable));
 
         if (!mount.getLockSwitch()) {
             this.addRenderableWidget(new LinkedArrowWidget(posX / 2 - 50, posY / 2 + 40, 100, 16, arrowLeftModel, arrowRightModel, I18n.get("gui.mountables2.chip.model")));

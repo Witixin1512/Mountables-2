@@ -1,5 +1,8 @@
 package witixin.mountables2.entity.movement;
 
+import org.apache.logging.log4j.LogManager;
+import witixin.mountables2.Mountables2Mod;
+
 import java.util.Objects;
 
 public record MountTravel(Major major,
@@ -10,6 +13,7 @@ public record MountTravel(Major major,
         try {
             return Minor.valueOf(name);
         } catch (IllegalArgumentException e) {
+            LogManager.getLogger("Mountables2").error(name + " was an invalid Minor name! Please report this issue to the mountables2 author!");
             return Minor.NONE;
         }
     }
