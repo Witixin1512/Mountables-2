@@ -17,18 +17,29 @@ import java.util.UUID;
 
 public class MountableAIScreen extends CommandChipScreen {
 
+    String[] majors;
+    byte totalRows;
+
     public MountableAIScreen(int entityId) {
         super(entityId);
     }
 
     @Override
     protected void init() {
+
+        majors = new String[]{
+                I18n.get("gui.mountables2.ai.fly"),
+                I18n.get("gui.mountables2.ai.walk"),
+                I18n.get("gui.mountables2.ai.swim")};
+
+        totalRows = (byte) ((mount.canFly() ? 1 : 0) + (mount.canWalk() ? 1 : 0) + (mount.canSwim() ? 1 : 0));
+
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
 
         int row = 0; //button index used to calculate position
         int column = 0;//index of column use to calculate offset
-        byte totalRows = (byte) ((mount.canFly() ? 1 : 0) + (mount.canWalk() ? 1 : 0) + (mount.canSwim() ? 1 : 0));
+
 
         for (MountTravel.Major major : MountTravel.Major.values()) {
             //skip major if the corresponding movement is absent from mount
@@ -59,7 +70,7 @@ public class MountableAIScreen extends CommandChipScreen {
             }
             row = 0;
             //add a linked widget with all buttons for the major of this iteration to the screen
-            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), 0, 80, 30 * minors.size(), minors.toArray(new SwitchableWidget[0])));
+            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), posY / 2 - 120, 80, 30 * minors.size(), minors.toArray(new SwitchableWidget[0])));
             column++;
         }
 
@@ -74,15 +85,34 @@ public class MountableAIScreen extends CommandChipScreen {
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-        String[] majors = new String[]{
-                I18n.get("gui.mountables2.ai.swim"),
-                I18n.get("gui.mountables2.ai.walk"),
-                I18n.get("gui.mountables2.ai.fly")
-        };
         int i = 0;
-        for (String major : majors) {
-            Minecraft.getInstance().font.drawShadow(pPoseStack, major, -100 + (100 * i) + posX / 2f - Minecraft.getInstance().font.width(major) / 2f, (posY - 256) / 2f + 30, 0xffffff);
-            i++;
+        for (MountTravel.Major major : MountTravel.Major.values()) {
+            if (canRenderMajor(major)) {
+                String majorName = getStringFromMajor(major);
+                Minecraft.getInstance().font.drawShadow(pPoseStack, majorName,   posX / 2f - Minecraft.getInstance().font.width(majorName) / 2f + 100 * i - getOffset(totalRows), (posY - 256) / 2f + 30, 0xffffff);
+                ++i;
+            }
         }
+    }
+
+    private boolean canRenderMajor(MountTravel.Major major) {
+        if (major == MountTravel.Major.FLY) return this.mount.canFly();
+        if (major == MountTravel.Major.WALK) return this.mount.canWalk();
+        if (major == MountTravel.Major.SWIM) return this.mount.canSwim();
+        return false;
+    }
+
+    private int getOffset(int totalRows) {
+        if (totalRows == 1) return 7;
+        if (totalRows == 2) return 50;
+        if (totalRows == 3) return 100;
+        return 0;
+    }
+
+    private String getStringFromMajor(MountTravel.Major major) {
+        if (major == MountTravel.Major.FLY) return this.majors[0];
+        if (major == MountTravel.Major.WALK) return this.majors[1];
+        if (major == MountTravel.Major.SWIM) return this.majors[2];
+        return "";
     }
 }
