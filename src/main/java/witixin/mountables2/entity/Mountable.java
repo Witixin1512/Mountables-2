@@ -87,12 +87,12 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     @Override
     public void tick() {
         super.tick();
-        if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
+        if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim()) {
             setMajor(MountTravel.Major.SWIM);
-        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
+        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
             setMajor(MountTravel.Major.WALK);
             if (this.isFlying()) setFlying(false);//walk when landing
-        } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
+        } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY) && canFly()) {
             setMajor(MountTravel.Major.FLY);
         }
     }
@@ -117,6 +117,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
             this.entityData.set(MAJOR_MOVEMENT, major.name());
             this.entityData.set(getEDAForMinor(major), minor.name());
             setNoGravity(major.isNoGravity());
+            if (minor == MountTravel.Minor.HOP && major == MountTravel.Major.FLY) setNoGravity(false);
         }
         currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
     }

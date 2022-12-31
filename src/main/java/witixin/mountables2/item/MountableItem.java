@@ -1,8 +1,10 @@
 package witixin.mountables2.item;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,6 +39,10 @@ public class MountableItem extends Item {
             } else {
                 //NBT is either invalid or empty here.
                 mountable.loadMountableData(((ServerLevel)pContext.getLevel()).getServer().getRecipeManager().getAllRecipesFor(Mountables2Mod.MOUNTABLE_RECIPE_TYPE.get()).get(0));
+            }
+            if (!(mountable.canFly() || mountable.canSwim() || mountable.canWalk())) {
+                pContext.getPlayer().sendSystemMessage(Component.literal("The summoned mountable has no defined move types!"));
+                mountable.remove(Entity.RemovalReason.DISCARDED);
             }
             pContext.getPlayer().getItemInHand(pContext.getHand()).shrink(1);
         }
