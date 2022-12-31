@@ -23,6 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
@@ -61,7 +64,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
 
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
 
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private MountableData mountableData;
     //Never set this value outside of setMajor()
     private MountTravel currentTravelMethod;
@@ -100,10 +103,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
 
     //TODO Make entity dying drop the thing
 
-    @Override
-    public void kill() {
-
-    }
 
     public MountTravel.Major getMajor(){
         return MountTravel.Major.valueOf(this.entityData.get(MAJOR_MOVEMENT));
@@ -314,6 +313,9 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         if (ENTITY_HEIGHT.equals(pKey)) {
             this.refreshDimensions();
         }
+        if (UNIQUE_NAME.equals(pKey)) {
+            cache = GeckoLibUtil.createInstanceCache(this);
+        }
         if (MAJOR_MOVEMENT.equals(pKey) || MINOR_MOVEMENT_SWIM.equals(pKey) || MINOR_MOVEMENT_WALK.equals(pKey) || MINOR_MOVEMENT_FLY.equals(pKey)) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(getMajor(), getMinorMovement(getMajor()));
         }
@@ -334,50 +336,19 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         return EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
     }
 
-    /*
-    @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController<>(this, "controller", 5, this::predicate));
 
-    }
-
-    private static final AnimationBuilder SWIM_ANIMATION = new AnimationBuilder().addAnimation("swim", ILoopType.EDefaultLoopTypes.LOOP);
-    private static final AnimationBuilder WALK_ANIMATION = new AnimationBuilder().addAnimation("walk", ILoopType.EDefaultLoopTypes.LOOP);
-    private static final AnimationBuilder FLY_ANIMATION = new AnimationBuilder().addAnimation("fly", ILoopType.EDefaultLoopTypes.LOOP);
-    private static final AnimationBuilder IDLE_ANIMATION = new AnimationBuilder().addAnimation("idle", ILoopType.EDefaultLoopTypes.LOOP);
-
-
-
-    private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
-            if (event.getAnimatable() instanceof Mountable mountable && event.isMoving()) {
-                if (mountable.currentTravelMethod.major().equals(MountTravel.Major.SWIM)) {
-                    event.getController().setAnimation(SWIM_ANIMATION);
-                    return PlayState.CONTINUE;
-                } else if (mountable.currentTravelMethod.major().equals(MountTravel.Major.WALK)) {
-                    //TODO JUMP AND LAND
-                    event.getController().setAnimation(WALK_ANIMATION);
-                    return PlayState.CONTINUE;
-                } else if (mountable.currentTravelMethod.major().equals(MountTravel.Major.FLY)) {
-                    event.getController().setAnimation(FLY_ANIMATION);
-                    return PlayState.CONTINUE;
-                }
-                else {
-                    event.getController().setAnimation(IDLE_ANIMATION);
-                    return PlayState.CONTINUE;
-                }
-            } else {
-                event.getController().setAnimation(IDLE_ANIMATION);
-                return PlayState.CONTINUE;
-            }
-    }
+    private static final RawAnimation SWIM_ANIMATION = RawAnimation.begin().thenLoop("swim");
+    private static final RawAnimation WALK_ANIMATION = RawAnimation.begin().thenLoop("walk");
+    private static final RawAnimation FLY_ANIMATION = RawAnimation.begin().thenLoop("fly");
+    private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("idle");
 
     @Override
-    public AnimationFactory getFactory() {
-        return factory;
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, 10, state -> {
+            state.setAnimation(IDLE_ANIMATION);
+            return PlayState.CONTINUE;
+        }));
     }
-
-
-     */
 
     @Override
     protected void defineSynchedData() {
@@ -462,18 +433,13 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-
-    }
-
-    @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return cache;
     }
 
     @Override
     public double getTick(Object object) {
-        return age;
+        return tickCount;
     }
 
     public boolean getLockSwitch() {

@@ -27,6 +27,10 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
         this.addRenderLayer(new MountableRenderLayer(this));
     }
 
+    @Override
+    public void render(Mountable entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+        super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+    }
 
     private static class MountableRenderLayer extends GeoRenderLayer<Mountable> {
 
@@ -37,7 +41,7 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
         @Nullable
         protected RenderType getRenderType(Mountable animatable) {
             String location = animatable.getEmissiveTexture();
-            if (location.equals("transparent")) return null;
+            if (location.equals("transparent"))  return null;
             return RenderType.eyes(Mountables2Mod.rl("textures/" + location + ".png"));
         }
 
@@ -46,9 +50,7 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
             RenderType type = getRenderType(animatable);
 
             if (type != null) {
-                getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, type,
-                        bufferSource.getBuffer(type), partialTick, 15728640, OverlayTexture.NO_OVERLAY,
-                        1, 1, 1, 1);
+                getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, type, bufferSource.getBuffer(type), partialTick, 15728640, OverlayTexture.NO_OVERLAY,1, 1, 1, 1);
             }
         }
     }
