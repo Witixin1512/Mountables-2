@@ -25,20 +25,14 @@ public class MountableItem extends Item {
             if (stack.getOrCreateTag().contains("MOUNTABLE")) {
                 final CompoundTag tagToRead = stack.getTag();
                 mountable.loadMountableData(Mountables2Mod.findData(tagToRead.getString("MOUNTABLE"), pContext.getLevel().getServer()));
-//                mountable.setModelPosition(tagToRead.getInt("MODEL_POS"));
-//                mountable.setAbsoluteEmissive(tagToRead.getInt("TEX_POS"));
-                if (tagToRead.contains("dead")) {
+                if (tagToRead.contains("MOUNTABLE_DEAD")) {
                     mountable.setHealth(1.0f);
                 }
-                if (tagToRead.contains("locked")) {
-//                    mountable.setLockSwitch(true);
+                if (tagToRead.contains("MOUNTABLE_LOCKED")) {
+                   mountable.setLockSwitch(true);
                 }
                 if (tagToRead.contains("FOLLOW_MODE")) {
-//                    mountable.setFollowMode(tagToRead.getString("FOLLOW_MODE"));
-//                    mountable.setFlightMode(tagToRead.getString("FLIGHT_MODE"));
-//                    mountable.setFreeMode(tagToRead.getString("FREE_MODE"));
-//                    mountable.setWaterMode(tagToRead.getString("WATER_MODE"));
-//                    mountable.setGroundMode(tagToRead.getString("GROUND_MODE"));
+                    mountable.setFollowMode(tagToRead.getByte("FOLLOW_MODE"));
                 }
             } else {
                 //NBT is either invalid or empty here.

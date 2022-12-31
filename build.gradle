@@ -23,8 +23,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    //mappings channel: 'parchment', version: '2022.03.13-1.18.2'
-    mappings channel: 'official', version: '1.19.3'
+    mappings channel: 'parchment', version: '2022.12.18-1.19.3'
+    //mappings channel: 'official', version: '1.19.3'
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
     runs {
@@ -34,7 +34,7 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            args '--username', 'Dev2'
+            args '--username', 'Dev###'
             mods {
                 mountables2 {
                     source sourceSets.main

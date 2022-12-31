@@ -15,6 +15,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -46,11 +47,13 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     public static final EntityDataAccessor<String> MINOR_MOVEMENT_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> MAJOR_MOVEMENT = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Byte> FOLLOW_MODE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BYTE);
-    public static final EntityDataAccessor<Boolean> AIRBOURNE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> AIRBORNE = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
 
     public static final EntityDataAccessor<Boolean> CAN_FLY = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> CAN_WALK = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> CAN_SWIM = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
+
+    public static final EntityDataAccessor<Boolean> LOCK_SWITCH = SynchedEntityData.defineId(Mountable.class, EntityDataSerializers.BOOLEAN);
 
     public static final byte FOLLOW = 0;
     public static final byte WANDER = 1;
@@ -61,8 +64,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private MountableData mountableData;
     //Never set this value outside of setMajor()
-    private MountTravel currentTravelMethod = MovementRegistry.INSTANCE.getMovement(MountTravel.Major.WALK, MountTravel.Minor.NONE);
-    private boolean lockSwitch;
+    private MountTravel currentTravelMethod;
     private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
 
     private int hopTimer;
@@ -70,15 +72,13 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     public Mountable(EntityType<? extends Mountable> type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
         dimensions = getDimensions(Pose.STANDING); //pose
-        setMajor(getMajor());
+        currentTravelMethod = MovementRegistry.INSTANCE.getMovement(getMajor(), getMinorMovement(getMajor()));
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
-        //Is this handled in movement I assume then?
-//        this.goalSelector.addGoal(1, new MountableFloatGoal(this));
     }
 
     @Override
@@ -96,6 +96,13 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
 
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
         return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
+    }
+
+    //TODO Make entity dying drop the thing
+
+    @Override
+    public void kill() {
+
     }
 
     public MountTravel.Major getMajor(){
@@ -116,11 +123,11 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     }
 
     public boolean isFlying() {
-        return this.entityData.get(AIRBOURNE);
+        return this.entityData.get(AIRBORNE);
     }
 
     public void setFlying(boolean flag) {
-        this.entityData.set(AIRBOURNE, flag);
+        this.entityData.set(AIRBORNE, flag);
     }
 
     public String getEmissiveTexture() {
@@ -192,7 +199,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         if (!pPlayer.level.isClientSide) {
             if (pPlayer.isShiftKeyDown() && pPlayer.getUUID().equals(getOwnerUUID()) && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
                 this.remove(RemovalReason.DISCARDED);
-                //TODO this.dropMountableItem();
+                if (!pPlayer.isCreative()) this.dropMountableItem(false);
                 return InteractionResult.SUCCESS;
             }
             if (!this.isVehicle() && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
@@ -208,7 +215,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
                 ClientReferences.openCommandChipScreen(getId());
                 return InteractionResult.sidedSuccess(true);
             } else {
-                //TODO Check if sendSystemMEssage == sendmessage
                 pPlayer.sendSystemMessage(Component.translatable("msg.mountables2.chip.owner"));
                 return InteractionResult.FAIL;
             }
@@ -292,10 +298,24 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         return null;
     }
 
+    public void dropMountableItem(boolean death) {
+        final ItemStack mountableStack = new ItemStack(Mountables2Mod.MOUNTABLE.get());
+        final CompoundTag nbtData = new CompoundTag();
+        nbtData.putString("MOUNTABLE", this.mountableData.uniqueName());
+        if (death) nbtData.putBoolean("MOUNTABLE_DEAD", true);
+        if (this.getLockSwitch()) nbtData.putBoolean("MOUNTABLE_LOCKED", true);
+        nbtData.putByte("FOLLOW_MODE", this.getFollowMode());
+        mountableStack.setTag(nbtData);
+        this.spawnAtLocation(mountableStack);
+    }
+
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> pKey) {
         if (ENTITY_HEIGHT.equals(pKey)) {
             this.refreshDimensions();
+        }
+        if (MAJOR_MOVEMENT.equals(pKey) || MINOR_MOVEMENT_SWIM.equals(pKey) || MINOR_MOVEMENT_WALK.equals(pKey) || MINOR_MOVEMENT_FLY.equals(pKey)) {
+            currentTravelMethod = MovementRegistry.INSTANCE.getMovement(getMajor(), getMinorMovement(getMajor()));
         }
         super.onSyncedDataUpdated(pKey);
     }
@@ -370,11 +390,12 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         this.entityData.define(ENTITY_WIDTH, 1.0f);
         this.entityData.define(ENTITY_HEIGHT, 1.0f);
         this.entityData.define(FOLLOW_MODE, FOLLOW);
-        this.entityData.define(AIRBOURNE, false);
+        this.entityData.define(AIRBORNE, false);
         this.entityData.define(MAJOR_MOVEMENT, MountTravel.Major.WALK.name());
         this.entityData.define(CAN_FLY, false);
         this.entityData.define(CAN_WALK, false);
         this.entityData.define(CAN_SWIM, false);
+        this.entityData.define(LOCK_SWITCH, false);
     }
 
     @Override
@@ -383,7 +404,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
         tag.putString("emissive_texture", getEmissiveTexture());
 
-        tag.putBoolean("flying", this.entityData.get(AIRBOURNE));
+        tag.putBoolean("flying", this.entityData.get(AIRBORNE));
         tag.putString("minor_fly", this.entityData.get(MINOR_MOVEMENT_FLY));
         tag.putString("minor_walk", this.entityData.get(MINOR_MOVEMENT_WALK));
         tag.putString("minor_swim", this.entityData.get(MINOR_MOVEMENT_SWIM));
@@ -391,7 +412,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
 
         tag.putFloat("mountable_width", this.entityData.get(ENTITY_WIDTH));
         tag.putFloat("mountable_height", this.entityData.get(ENTITY_HEIGHT));
-        tag.putBoolean("lock_switch", lockSwitch);
+        tag.putBoolean("lock_switch", this.getLockSwitch());
         tag.putString("movement_major", this.getMajor().name());
 
         tag.putBoolean("can_fly", this.canFly());
@@ -404,14 +425,14 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         super.readAdditionalSaveData(tag);
         this.setUniqueName(tag.getString("unique_mountable_name"));
         this.setEmissiveTexture(tag.getString("emissive_texture"));
-        this.entityData.set(AIRBOURNE, tag.getBoolean("flying"));
+        this.entityData.set(AIRBORNE, tag.getBoolean("flying"));
         this.entityData.set(MINOR_MOVEMENT_FLY, tag.getString("minor_fly"));
         this.entityData.set(MINOR_MOVEMENT_WALK, tag.getString("minor_walk"));
         this.entityData.set(MINOR_MOVEMENT_SWIM, tag.getString("minor_swim"));
         this.entityData.set(FOLLOW_MODE, tag.getByte("follow_mode"));
         this.entityData.set(ENTITY_WIDTH, tag.getFloat("mountable_width"));
         this.entityData.set(ENTITY_HEIGHT, tag.getFloat("mountable_height"));
-        this.lockSwitch = tag.getBoolean("lock_switch");
+        this.setLockSwitch(tag.getBoolean("lock_switch"));
         this.setMajor(MountTravel.Major.valueOf(tag.getString("movement_major")));
         this.entityData.set(CAN_FLY, tag.getBoolean("can_fly"));
         this.entityData.set(CAN_WALK, tag.getBoolean("can_walk"));
@@ -430,10 +451,6 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
             case SWIM -> MINOR_MOVEMENT_SWIM;
             case WALK -> MINOR_MOVEMENT_WALK;
         };
-    }
-
-    public boolean getLockSwitch() {
-        return lockSwitch;
     }
 
     public void setKeyStrokeMovement(KeyStrokeMovement keyStrokeMovement) {
@@ -458,4 +475,13 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     public double getTick(Object object) {
         return age;
     }
+
+    public boolean getLockSwitch() {
+        return this.entityData.get(LOCK_SWITCH);
+    }
+
+    public void setLockSwitch(boolean bool) {
+        this.entityData.set(LOCK_SWITCH, bool);
+    }
+
 }

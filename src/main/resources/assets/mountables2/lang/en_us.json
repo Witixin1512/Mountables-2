@@ -20,6 +20,7 @@
   "gui.mountables2.ai.sink" : "Sink",
   "gui.mountables2.ai.jump" : "Jump",
 
+  "gui.mountables2.chip.follow_type": "Follow Type",
   "gui.mountables2.chip.wander" : "Wander",
   "gui.mountables2.chip.stay" : "Stay",
   "gui.mountables2.chip.follow" : "Follow",
