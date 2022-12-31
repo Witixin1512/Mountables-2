@@ -4,6 +4,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.movement.travel.FlyHopTravel;
 import witixin.mountables2.entity.movement.travel.HopTravel;
 import witixin.mountables2.entity.movement.travel.WalkTravel;
 
@@ -56,6 +57,8 @@ public enum MovementRegistry {
             }
             return travelVector;
         }));
+
+        registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.HOP, new FlyHopTravel()));
 
         registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (mount, travelVector) ->
 
