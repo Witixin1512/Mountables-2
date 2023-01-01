@@ -19,7 +19,7 @@ public class LinkedSwitchableWidget extends AbstractWidget {
         for (SwitchableWidget switchableWidget : widgets) {
             if (this.getY() == 0)
                 this.setY(switchableWidget.getY()); //Set y position of the SLW to the Y value of the first button in the list, must the button determine the height and not the LSW
-            switchableWidget.updatePos(pX, pY);
+            switchableWidget.updatePos(pX,  pY);
         }
     }
 
@@ -28,24 +28,25 @@ public class LinkedSwitchableWidget extends AbstractWidget {
         for (SwitchableWidget w : widgets) {
             w.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
-        //DEBUG POSITION fill(pPoseStack, x, y, x + width, y + height, 0xaa00ff00);
+        fill(pPoseStack, getX(), getY(), getX() + width, getY() + height, 0xaa00ff00);
     }
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-
         boolean clicked = super.mouseClicked(pMouseX, pMouseY, pButton);
         if (clicked) {
+            boolean clickedWidget = false;
             int index = 0;
             for (SwitchableWidget w : widgets) {
                 if (w.mouseClicked(pMouseX, pMouseY, pButton)) {
+                    clickedWidget = true;
                     selectedWidget = widgets[index];
                     selectedWidget.setEnabled(true);
                 }
                 index++;
             }
             for (SwitchableWidget w : widgets)
-                if (!w.equals(selectedWidget))
+                if (clickedWidget && !w.equals(selectedWidget))
                     w.setEnabled(false);
         }
         return clicked;

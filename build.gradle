@@ -15,7 +15,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.19.3'
-version = mc_version + '-BETA-1.0.0'
+version = mc_version + '-BETA-1.0.1'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
