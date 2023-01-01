@@ -17,8 +17,6 @@ public class LinkedSwitchableWidget extends AbstractWidget {
         this.widgets = widgets;
 
         for (SwitchableWidget switchableWidget : widgets) {
-            if (this.getY() == 0)
-                this.setY(switchableWidget.getY()); //Set y position of the SLW to the Y value of the first button in the list, must the button determine the height and not the LSW
             switchableWidget.updatePos(pX,  pY);
         }
     }
@@ -28,7 +26,7 @@ public class LinkedSwitchableWidget extends AbstractWidget {
         for (SwitchableWidget w : widgets) {
             w.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
-        fill(pPoseStack, getX(), getY(), getX() + width, getY() + height, 0xaa00ff00);
+        //fill(pPoseStack, getX(), getY(), getX() + width, getY() + height, 0xaa00ff00);
     }
 
     @Override

@@ -48,7 +48,6 @@ public class PackFinderManager {
             Pack.Info pack$info = Pack.readPackInfo(Mountables2Mod.MODID + ":" + rootFile.getName(), pack$resourcessupplier);
             if (rootFile.exists()) {
                 Pack pack = Pack.create(Mountables2Mod.MODID + ":" + rootFile.getName(), Component.translatable("gui.mountables2.pack_name", type.toString().toLowerCase(Locale.ROOT)), true, pack$resourcessupplier, pack$info, type, Pack.Position.BOTTOM, false, PackSource.DEFAULT);
-                //TODO TEST THIS ABERRATION
                 pInfoConsumer.accept(pack);
             }
 

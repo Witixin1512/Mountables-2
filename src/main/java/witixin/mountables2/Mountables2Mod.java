@@ -204,10 +204,6 @@ public class Mountables2Mod {
         }
     };
 
-
-    //TODO CreativeTabs
-    //TODO GLM Codec - Test This as it should be done!
-
     //TODO Update GeckoLib
 }
 

@@ -38,6 +38,7 @@ public class SwitchableWidget extends AbstractWidget {
         blit(pPoseStack, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
         float amount = Minecraft.getInstance().font.width(renderText);
         Minecraft.getInstance().font.drawShadow(pPoseStack, renderText, this.getX() + width/2f - amount / 2f, this.getY() + 6, 0xffffff);
+        //fill(pPoseStack, getX(), getY(), getX() + width, getY() + height, 0xaaff0000);
     }
 
     public boolean isEnabled() {

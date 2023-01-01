@@ -56,7 +56,7 @@ public class MountableAIScreen extends CommandChipScreen {
                 final boolean enabled = mountMinor.equals(travel.minor());
 
                 SwitchableWidget widget = new SwitchableWidget(
-                        0, 50 + (30 * row), //position
+                        0,  (30 * row), //position
                         80, 20, //size
                         I18n.get(String.format("gui.mountables2.ai.%s", travel.minor().name().toLowerCase())),
                         pButton -> {
@@ -70,7 +70,7 @@ public class MountableAIScreen extends CommandChipScreen {
             }
             row = 0;
             //add a linked widget with all buttons for the major of this iteration to the screen
-            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), posY / 2 - 120, 80, 30 * minors.size(), minors.toArray(new SwitchableWidget[0])));
+            this.addRenderableWidget(new LinkedSwitchableWidget(posX / 2 - (46 * totalRows) + (100 * column), posY / 2 - 80, 80, 30 * minors.size(), minors.toArray(new SwitchableWidget[0])));
             column++;
         }
 

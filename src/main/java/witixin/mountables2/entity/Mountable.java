@@ -70,12 +70,12 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     private MountTravel currentTravelMethod;
     private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
 
-    private int hopTimer;
-
     public Mountable(EntityType<? extends Mountable> type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
-        dimensions = getDimensions(Pose.STANDING); //pose
-        currentTravelMethod = MovementRegistry.INSTANCE.getMovement(getMajor(), getMinorMovement(getMajor()));
+        this.dimensions = getDimensions(Pose.STANDING); //pose
+        //Current major is unstable and will always give companion block for one tick.
+        final MountTravel.Major currentMajor = this.getMajor();
+        this.currentTravelMethod = MovementRegistry.INSTANCE.getMovement(currentMajor, getMinorMovement(currentMajor));
     }
 
     @Override
@@ -87,6 +87,10 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     @Override
     public void tick() {
         super.tick();
+        this.reevaluateMovement();
+    }
+
+    public void reevaluateMovement() {
         if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim()) {
             setMajor(MountTravel.Major.SWIM);
         } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
@@ -94,6 +98,27 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
             if (this.isFlying()) setFlying(false);//walk when landing
         } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY) && canFly()) {
             setMajor(MountTravel.Major.FLY);
+        }
+    }
+
+    public void ensureAbilities() {
+        final boolean canWalk = this.canWalk();
+        final boolean canSwim = this.canSwim();
+        final boolean canFly = this.canFly();
+
+        if (!canWalk && this.getMajor().equals(MountTravel.Major.WALK)) {
+            setMajor(MountTravel.Major.SWIM);
+        }
+        if (!canSwim && this.getMajor().equals(MountTravel.Major.SWIM)) {
+                setMajor(MountTravel.Major.FLY);
+        }
+        if (!canFly && this.getMajor().equals(MountTravel.Major.FLY)) {
+            if (canWalk) {
+                setMajor(MountTravel.Major.WALK);
+            }
+            else {
+                setMajor(MountTravel.Major.SWIM);
+            }
         }
     }
 
@@ -286,7 +311,7 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
     }
 
     public void updateMovementAbilities(){
-        final Boolean[] AI_MODES = mountableData.aiModes();
+        final Boolean[] AI_MODES = this.getMountableData().aiModes();
         this.entityData.set(CAN_WALK, AI_MODES[MountableSerializer.WALK]);
         this.entityData.set(CAN_FLY, AI_MODES[MountableSerializer.FLY]);
         this.entityData.set(CAN_SWIM, AI_MODES[MountableSerializer.SWIM]);
@@ -316,6 +341,8 @@ public class Mountable extends TamableAnimal implements GeoAnimatable {
         }
         if (UNIQUE_NAME.equals(pKey)) {
             cache = GeckoLibUtil.createInstanceCache(this);
+            if (!level.isClientSide) this.updateMovementAbilities();
+            this.ensureAbilities();
         }
         if (MAJOR_MOVEMENT.equals(pKey) || MINOR_MOVEMENT_SWIM.equals(pKey) || MINOR_MOVEMENT_WALK.equals(pKey) || MINOR_MOVEMENT_FLY.equals(pKey)) {
             currentTravelMethod = MovementRegistry.INSTANCE.getMovement(getMajor(), getMinorMovement(getMajor()));
