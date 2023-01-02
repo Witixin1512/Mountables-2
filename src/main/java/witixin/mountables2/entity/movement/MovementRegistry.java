@@ -63,6 +63,16 @@ public enum MovementRegistry {
         registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (mount, travelVector) ->
 
         {
+            double modifier = VERTICAL_COEFICIENT;
+            if (mount.isInWaterOrBubble()) {
+                if (mount.getControllingPassenger() instanceof Player player && (Mountable.isVectorNotZero(travelVector) || mount.getKeyStrokeMovement().spacebar())) {
+                    modifier *= player.getLookAngle().y;
+                    return travelVector.add(0, modifier, 0);
+                }
+            }
+            else {
+                return travelVector.multiply(0.5, 1.0, 0.5);
+            }
             return travelVector;
         }));
     }

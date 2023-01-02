@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -65,7 +66,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
 
-    private AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private MountableData mountableData;
     //Never set this value outside of setMajor()
     private MountTravel currentTravelMethod;
@@ -121,6 +122,15 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                 setMajor(MountTravel.Major.SWIM);
             }
         }
+    }
+
+    public boolean canBeRiddenUnderFluidType(FluidType type, Entity rider) {
+        return true;
+    }
+
+    @Override
+    public boolean canDrownInFluidType(FluidType type) {
+        return !this.canSwim();
     }
 
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
@@ -274,7 +284,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                 if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
                     speed /= 2.0d;
 
-                double sideWaysFactor = 0.60;//about two thirds of frontal movement
+                double sideWaysFactor = speed * 2 / 3;//about two thirds of frontal movement
                 double inverseX = keyStrokeMovement.forwards() && !keyStrokeMovement.backwards() ? 1 : -1;
                 double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
                 if (getKeyStrokeMovement().isFrontal())
@@ -341,7 +351,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
             this.refreshDimensions();
         }
         if (UNIQUE_NAME.equals(pKey)) {
-            cache = GeckoLibUtil.createInstanceCache(this);
             if (!level.isClientSide) this.updateMovementAbilities();
             this.ensureAbilities();
         }
@@ -459,6 +468,10 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     public KeyStrokeMovement getKeyStrokeMovement() {
         return keyStrokeMovement;
+    }
+
+    public static boolean isVectorNotZero(Vec3 vec3) {
+        return !vec3.add(Vec3.ZERO).equals(Vec3.ZERO);
     }
 
     @Override
