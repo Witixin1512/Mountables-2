@@ -75,5 +75,24 @@ public enum MovementRegistry {
             }
             return travelVector;
         }));
+
+        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.FLOAT, (mount, travelVec) -> {
+          if (mount.isInWaterOrBubble()) {
+              return travelVec.add(0, 0.1, 0);
+          }
+          else {
+              return travelVec.multiply(0.5, 1.0, 0.5);
+          }
+        }));
+
+
+        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.SINK, (mount, travelVec) -> {
+            if (mount.isInWaterOrBubble()) {
+                return travelVec.add(0, -0.15, 0);
+            }
+            else {
+                return travelVec.multiply(0.5, 1.0, 0.5);
+            }
+        }));
     }
 }
