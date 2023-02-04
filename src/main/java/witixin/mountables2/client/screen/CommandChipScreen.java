@@ -38,8 +38,6 @@ public class CommandChipScreen extends Screen {
 
         int posX = minecraft.getWindow().getGuiScaledWidth();
         int posY = minecraft.getWindow().getGuiScaledHeight();
-
-        //TODO Make sure data is saved and synced somehow
         ArrowSelectionWidget arrowLeftModel = new ArrowSelectionWidget(0, 0, 16, 16, ARROW_LEFT,
                 () -> PacketHandler.INSTANCE.sendToServer(new ServerUpdateMountModelPacket(entityId, PREVIOUS)));
         ArrowSelectionWidget arrowRightModel = new ArrowSelectionWidget(84, 0, 16, 16, ARROW_RIGHT,
