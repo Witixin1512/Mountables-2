@@ -1,5 +1,7 @@
 package witixin.mountables2.entity;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -22,7 +24,6 @@ import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
@@ -136,24 +137,25 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     public MountTravel.Minor getMinorMovement(MountTravel.Major major) {
         return MountTravel.from(this.entityData.get(getEDAForMinor(major)));
     }
-
-    //TODO Make entity dying drop the thing
-
+    @Override
+    public void die(DamageSource pCause) {
+        if (!this.level.isClientSide) this.dropMountableItem(true);
+    }
 
     public MountTravel.Major getMajor(){
         return MountTravel.Major.valueOf(this.entityData.get(MAJOR_MOVEMENT));
     }
 
     public void setMajor(MountTravel.Major major){
-        setMajor(major, getMinorMovement(major));
+        this.setMajor(major, this.getMinorMovement(major));
     }
 
     public void setMajor(MountTravel.Major major, MountTravel.Minor minor){
         if (!this.level.isClientSide){
             this.entityData.set(MAJOR_MOVEMENT, major.name());
-            this.entityData.set(getEDAForMinor(major), minor.name());
-            setNoGravity(major.isNoGravity());
-            if (minor == MountTravel.Minor.HOP && major == MountTravel.Major.FLY) setNoGravity(false);
+            this.entityData.set(this.getEDAForMinor(major), minor.name());
+            this.setNoGravity(major.isNoGravity());
+            if (minor == MountTravel.Minor.HOP && major == MountTravel.Major.FLY) this.setNoGravity(false);
         }
         currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
     }
@@ -174,10 +176,14 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         this.entityData.set(EMISSIVE_TEXTURE, toSet);
     }
 
+    /**
+     * Only callable on the server side
+     * @return The MountableData of this Mountable type.
+     */
     public MountableData getMountableData() {
         if (this.mountableData == null) {
             this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath(), this.getServer());
-            loadMountableData(mountableData);
+            this.loadMountableData(mountableData);
         }
         return this.mountableData;
     }
@@ -201,17 +207,12 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         this.entityData.set(UNIQUE_NAME, s);
     }
 
-    /**
-     * Reflection is here to support any of the vanilla attributes.
-     * TODO maybe rethink this and only support the 5 regular ones.
-     * @param dataAttributeMap
-     */
     private void processAttributes(Map<String, Double> dataAttributeMap) {
         for (Map.Entry<String, Double> entry : dataAttributeMap.entrySet()) {
             try {
-                Attribute attribute = (Attribute) ObfuscationReflectionHelper.findField(Attributes.class, Mountables2Mod.SRG_ATTRIBUTES_MAP.get(entry.getKey())).get(null);
+                Attribute attribute = BuiltInRegistries.ATTRIBUTE.get(new ResourceLocation(entry.getKey()));
                 this.getAttribute(attribute).setBaseValue(entry.getValue());
-            } catch (IllegalAccessException | NullPointerException e) {
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
         }
@@ -239,11 +240,9 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                 return InteractionResult.SUCCESS;
             }
             if (!this.isVehicle() && pPlayer.getMainHandItem().getItem() != Mountables2Mod.COMMAND_CHIP.get()) {
-                if (!this.level.isClientSide) {
-                    pPlayer.setYRot(this.getYRot());
-                    pPlayer.setXRot(this.getXRot());
-                    pPlayer.startRiding(this);
-                }
+                pPlayer.setYRot(this.getYRot());
+                pPlayer.setXRot(this.getXRot());
+                pPlayer.startRiding(this);
                 return InteractionResult.SUCCESS;
             }
         } else if (pPlayer.getItemInHand(pHand).getItem().equals(Mountables2Mod.COMMAND_CHIP.get())) {
@@ -266,7 +265,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     @Override
     public void travel(Vec3 pTravelVector) {
-        Vec3 newvector = pTravelVector;
+        Vec3 newVector = pTravelVector;
 
         if (isAlive()) {
             if (isVehicle() && getFirstPassenger() instanceof LivingEntity rider) {
@@ -299,14 +298,14 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
                 pTravelVector = new Vec3(sinXRot + sinZRot, deltaY, cosXRot + cosZRot);
 
-                newvector = currentTravelMethod.movement().travel(this, pTravelVector);
+                newVector = currentTravelMethod.movement().travel(this, pTravelVector);
             }
             else {
-
+               super.travel(currentTravelMethod.movement().travel(this, pTravelVector));
             }
         }
-        this.setDeltaMovement(this.getDeltaMovement().add(newvector));
-        super.travel(newvector);
+        this.setDeltaMovement(this.getDeltaMovement().add(newVector));
+        super.travel(newVector);
     }
 
     public boolean canWalk() {
@@ -337,7 +336,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     public void dropMountableItem(boolean death) {
         final ItemStack mountableStack = new ItemStack(Mountables2Mod.MOUNTABLE.get());
         final CompoundTag nbtData = new CompoundTag();
-        nbtData.putString("MOUNTABLE", this.mountableData.uniqueName());
+        nbtData.putString("MOUNTABLE", this.getMountableData().uniqueName());
         if (death) nbtData.putBoolean("MOUNTABLE_DEAD", true);
         if (this.getLockSwitch()) nbtData.putBoolean("MOUNTABLE_LOCKED", true);
         nbtData.putByte("FOLLOW_MODE", this.getFollowMode());
@@ -379,6 +378,8 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     private static final RawAnimation WALK_ANIMATION = RawAnimation.begin().thenLoop("walk");
     private static final RawAnimation FLY_ANIMATION = RawAnimation.begin().thenLoop("fly");
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("idle");
+
+    //TODO GeckoLib
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {

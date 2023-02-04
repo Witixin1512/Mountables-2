@@ -80,15 +80,6 @@ public class Mountables2Mod {
     public static final DeferredRegister<EntityType<?>> ENTITY_REGISTER = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final RegistryObject<EntityType<Mountable>> MOUNTABLE_ENTITY = ENTITY_REGISTER.register("mountable_entity",
             () -> EntityType.Builder.of(Mountable::new, MobCategory.CREATURE).sized(1.0f, 1.0f).clientTrackingRange(10).build("mountable_entity"));
-    public static final Map<String, String> SRG_ATTRIBUTES_MAP = Util.make(() -> {
-        Map<String, String> srgMap = new HashMap<>();
-        srgMap.put("MAX_HEALTH", "f_22276_");
-        srgMap.put("FOLLOW_RANGE", "f_22277_");
-        srgMap.put("MOVEMENT_SPEED", "f_22279_");
-        srgMap.put("FLYING_SPEED", "f_22279_");
-        srgMap.put("JUMP_STRENGTH", "f_22288_");
-        return srgMap;
-    });
     private static final Item.Properties DEFAULT_PROPERTIES = new Item.Properties();
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> GLM_REG = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
 
@@ -204,6 +195,5 @@ public class Mountables2Mod {
         }
     };
 
-    //TODO Update GeckoLib
 }
 
