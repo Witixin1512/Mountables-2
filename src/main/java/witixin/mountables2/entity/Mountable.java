@@ -83,6 +83,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     @Override
     protected void registerGoals() {
+        //TODO Do Mountable AI movement.
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
     }
@@ -90,10 +91,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        this.reevaluateMovement();
-    }
-
-    public void reevaluateMovement() {
         if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim()) {
             setMajor(MountTravel.Major.SWIM);
         } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
@@ -182,14 +179,14 @@ public class Mountable extends TamableAnimal implements GeoEntity {
      */
     public MountableData getMountableData() {
         if (this.mountableData == null) {
-            this.mountableData = Mountables2Mod.findData(getUniqueResourceLocation().getPath(), this.getServer());
+            this.mountableData = Mountables2Mod.findData(this.getUniqueName(), this.getServer());
             this.loadMountableData(mountableData);
         }
         return this.mountableData;
     }
 
-    public ResourceLocation getUniqueResourceLocation() {
-        return Mountables2Mod.rl(this.entityData.get(UNIQUE_NAME));
+    public String getUniqueName() {
+        return this.entityData.get(UNIQUE_NAME);
     }
 
     public void loadMountableData(MountableData data) {
@@ -384,8 +381,10 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, 10, state -> {
-            state.setAnimation(IDLE_ANIMATION);
-            return PlayState.CONTINUE;
+            if (state.isMoving()) {
+
+            }
+            return state.setAndContinue(IDLE_ANIMATION);
         }));
     }
 
@@ -411,8 +410,8 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putString("unique_mountable_name", getUniqueResourceLocation().getPath());
-        tag.putString("emissive_texture", getEmissiveTexture());
+        tag.putString("unique_mountable_name", this.getUniqueName());
+        tag.putString("emissive_texture", this.getEmissiveTexture());
 
         tag.putBoolean("flying", this.entityData.get(AIRBORNE));
         tag.putString("minor_fly", this.entityData.get(MINOR_MOVEMENT_FLY));

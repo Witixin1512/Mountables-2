@@ -8,19 +8,21 @@ import witixin.mountables2.entity.Mountable;
 
 public class MountableModel extends GeoModel<Mountable> {
 
+
+    //I'm not using the defaulted GeoModel as dynamic
     @Override
     public ResourceLocation getModelResource(Mountable object) {
-        return Mountables2Mod.rl("geo/" + object.getUniqueResourceLocation().getPath() + ".geo.json");
+        return Mountables2Mod.rl("geo/" + object.getUniqueName() + ".geo.json");
     }
 
     @Override
     public ResourceLocation getTextureResource(Mountable object) {
-        return Mountables2Mod.rl("textures/" + object.getUniqueResourceLocation().getPath() + ".png");
+        return Mountables2Mod.rl("textures/" + object.getUniqueName() + ".png");
     }
 
     @Override
     public ResourceLocation getAnimationResource(Mountable animatable) {
-        return Mountables2Mod.rl("animations/" + animatable.getUniqueResourceLocation().getPath() + ".animation.json");
+        return Mountables2Mod.rl("animations/" + animatable.getUniqueName() + ".animation.json");
     }
 
     @Override

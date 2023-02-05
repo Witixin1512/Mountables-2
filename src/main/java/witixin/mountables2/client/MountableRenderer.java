@@ -27,9 +27,9 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
         this.addRenderLayer(new MountableRenderLayer(this));
     }
 
-    @Override
-    public void render(Mountable entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+    //Used by the GeckoLib Renderer to determine whether
+    public float getMotionAnimThreshold(Mountable animatable) {
+        return 0.0015f;
     }
 
     private static class MountableRenderLayer extends GeoRenderLayer<Mountable> {
@@ -41,7 +41,7 @@ public class MountableRenderer extends GeoEntityRenderer<Mountable> {
         @Nullable
         protected RenderType getRenderType(Mountable animatable) {
             String location = animatable.getEmissiveTexture();
-            if (location.equals("transparent"))  return null;
+            if (location.equals("transparent")) return null;
             return RenderType.eyes(Mountables2Mod.rl("textures/" + location + ".png"));
         }
 
