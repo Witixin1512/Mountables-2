@@ -13,6 +13,7 @@ public class FlyHopTravel implements MountMovement {
 
         if ((!travelVector.add(Vec3.ZERO).equals(Vec3.ZERO) || mount.getKeyStrokeMovement().spacebar()) && mount.getDeltaMovement().y <= 0.05) {
             travelVector = new Vec3(travelVector.x, jumpStrength, travelVector.z);
+            mount.triggerAnim(Mountable.HOP_CONTROLLER, Mountable.JUMP_ANIMATION_NAME);
             mount.setOnGround(false);
             return travelVector;
         }

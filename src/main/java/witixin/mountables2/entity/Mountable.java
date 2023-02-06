@@ -1,7 +1,6 @@
 package witixin.mountables2.entity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -21,7 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
@@ -66,6 +64,11 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     public static final byte STAY = 2;
 
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
+    public static final String JUMP_ANIMATION_NAME = "jump";
+    public static final String HOP_CONTROLLER = "hop_controller";
+
+    public static final String LAND_CONTROLLER = "land_controller";
+    public static final String LAND_ANIMATION_NAME = "land";
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private MountableData mountableData;
@@ -95,7 +98,10 @@ public class Mountable extends TamableAnimal implements GeoEntity {
             setMajor(MountTravel.Major.SWIM);
         } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
             setMajor(MountTravel.Major.WALK);
-            if (this.isFlying()) setFlying(false);//walk when landing
+            if (this.isFlying()) {
+                this.triggerAnim(LAND_CONTROLLER, LAND_ANIMATION_NAME);
+                setFlying(false);//walk when landing
+            }
         } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY) && canFly()) {
             setMajor(MountTravel.Major.FLY);
         }
@@ -375,17 +381,29 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     private static final RawAnimation WALK_ANIMATION = RawAnimation.begin().thenLoop("walk");
     private static final RawAnimation FLY_ANIMATION = RawAnimation.begin().thenLoop("fly");
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("idle");
+    private static final RawAnimation HOP_ANIMATION = RawAnimation.begin().thenPlay(JUMP_ANIMATION_NAME);
+    private static final RawAnimation LAND_ANIMATION = RawAnimation.begin().thenPlay(LAND_ANIMATION_NAME);
 
     //TODO GeckoLib
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, 10, state -> {
+        controllers.add(new AnimationController<>(this, "base_controller", 10, state -> {
             if (state.isMoving()) {
-
+                final Mountable mount = state.getAnimatable();
+                final boolean onGround = mount.isOnGround();
+                if (mount.getMajor() == MountTravel.Major.FLY && mount.getMinorMovement(MountTravel.Major.FLY) == MountTravel.Minor.NORMAL)
+                    return state.setAndContinue(FLY_ANIMATION);
+                if (mount.getMajor() == MountTravel.Major.SWIM) return state.setAndContinue(SWIM_ANIMATION);
+                if (mount.getMajor() == MountTravel.Major.WALK && mount.getMinorMovement(MountTravel.Major.WALK) != MountTravel.Minor.HOP && onGround)
+                    return state.setAndContinue(WALK_ANIMATION);
             }
             return state.setAndContinue(IDLE_ANIMATION);
         }));
+        controllers.add(new AnimationController<>(this, HOP_CONTROLLER, 1, state -> PlayState.CONTINUE)
+                .triggerableAnim(JUMP_ANIMATION_NAME, HOP_ANIMATION));
+        controllers.add(new AnimationController<>(this, LAND_CONTROLLER, 1, state -> PlayState.CONTINUE)
+                .triggerableAnim(LAND_ANIMATION_NAME, LAND_ANIMATION));
     }
 
     @Override
@@ -393,9 +411,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         super.defineSynchedData();
         this.entityData.define(UNIQUE_NAME, "companion_block");
         this.entityData.define(EMISSIVE_TEXTURE, TRANSPARENT_EMISSIVE_TEXTURE);
-        this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NONE.name());
-        this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NONE.name());
-        this.entityData.define(MINOR_MOVEMENT_WALK, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NORMAL.name());
         this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NORMAL.name());
         this.entityData.define(MINOR_MOVEMENT_WALK, MountTravel.Minor.NORMAL.name());

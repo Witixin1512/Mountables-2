@@ -18,15 +18,17 @@ public class HopTravel implements MountMovement {
         final KeyStrokeMovement keyStrokeMovement = mount.getKeyStrokeMovement();
         if (mount.isOnGround() && (Mountable.isVectorNotZero(travelVector) || keyStrokeMovement.spacebar())){
             travelVector = new Vec3(travelVector.x, jumpStrength, travelVector.z);
+            mount.triggerAnim(Mountable.HOP_CONTROLLER, Mountable.JUMP_ANIMATION_NAME);
             airborne = false;
         }
         else {
-            //If we're jumping, drop speed by a bit
+            //If we double jump, set to fly.
             if (!airborne && mount.canFly() && !jumpOld && keyStrokeMovement.spacebar() && !mount.level.isClientSide) {
                 mount.setFlying(true);
-                jumpOld = airborne =  true;
+                jumpOld = airborne = true;
                 return travelVector;
             }
+            //If we're jumping, drop speed by a bit
             travelVector = travelVector.multiply(0.1, 1.0, 0.1);
         }
         jumpOld = keyStrokeMovement.spacebar();
