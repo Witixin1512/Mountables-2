@@ -13,7 +13,7 @@ public record MountTravel(Major major,
             return Minor.valueOf(name);
         } catch (IllegalArgumentException e) {
             LogManager.getLogger("Mountables2").error(name + " was an invalid Minor name! Please report this issue to the mountables2 author!");
-            return Minor.NONE;
+            return Minor.NORMAL;
         }
     }
 
@@ -51,10 +51,10 @@ public record MountTravel(Major major,
 
     /**
      * Minor movement types are modifiers that are applied to the various {@link Major} movement types.
-     * {@link Minor.NONE} implies that it should work normally, whereas the other types are intuitive.
+     * {@code Minor.Normal} implies that it should work normally, whereas the other types are intuitive.
      */
 
     public enum Minor {
-        HOP, SLOW, FLOAT, SINK, NONE
+        HOP, SLOW, FLOAT, SINK, NORMAL
     }
 }

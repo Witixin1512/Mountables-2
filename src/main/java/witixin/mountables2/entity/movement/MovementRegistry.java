@@ -1,8 +1,6 @@
 package witixin.mountables2.entity.movement;
 
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.entity.movement.travel.FlyHopTravel;
 import witixin.mountables2.entity.movement.travel.HopTravel;
@@ -39,13 +37,13 @@ public enum MovementRegistry {
     }
 
     public void load() {
-        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkTravel(1.0)));
+        registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NORMAL, new WalkTravel(1.0)));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, new WalkTravel(0.5)));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, new HopTravel()));
 
-        registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, (mount, travelVector) ->
+        registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NORMAL, (mount, travelVector) ->
         {
             double modifier = VERTICAL_COEFICIENT;
             if (mount.getControllingPassenger() instanceof Player player) {
@@ -60,7 +58,7 @@ public enum MovementRegistry {
 
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.HOP, new FlyHopTravel()));
 
-        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, (mount, travelVector) ->
+        registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NORMAL, (mount, travelVector) ->
 
         {
             double modifier = VERTICAL_COEFICIENT;

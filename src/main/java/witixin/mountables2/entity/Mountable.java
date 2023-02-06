@@ -396,6 +396,9 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NONE.name());
         this.entityData.define(MINOR_MOVEMENT_WALK, MountTravel.Minor.NONE.name());
+        this.entityData.define(MINOR_MOVEMENT_FLY, MountTravel.Minor.NORMAL.name());
+        this.entityData.define(MINOR_MOVEMENT_SWIM, MountTravel.Minor.NORMAL.name());
+        this.entityData.define(MINOR_MOVEMENT_WALK, MountTravel.Minor.NORMAL.name());
         this.entityData.define(ENTITY_WIDTH, 1.0f);
         this.entityData.define(ENTITY_HEIGHT, 1.0f);
         this.entityData.define(FOLLOW_MODE, FOLLOW);
