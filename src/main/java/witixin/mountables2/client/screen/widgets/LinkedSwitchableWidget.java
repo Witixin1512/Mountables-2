@@ -31,7 +31,7 @@ public class LinkedSwitchableWidget extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        boolean clicked = super.mouseClicked(pMouseX, pMouseY, pButton);
+        boolean clicked = Arrays.stream(widgets).map(switchableWidget -> switchableWidget.mouseClicked(pMouseX, pMouseY, pButton)).reduce(Boolean::logicalOr).get();
         if (clicked) {
             boolean clickedWidget = false;
             int index = 0;
