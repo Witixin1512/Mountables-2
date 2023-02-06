@@ -2,6 +2,7 @@ package witixin.mountables2.entity.goal;
 
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import witixin.mountables2.entity.Mountable;
+import witixin.mountables2.entity.movement.MountTravel;
 
 public class MountableFloatGoal extends FloatGoal {
 
@@ -14,11 +15,7 @@ public class MountableFloatGoal extends FloatGoal {
 
     @Override
     public boolean canUse() {
-//        if (mountable.isVehicle()) {
-//            return mountable.getWaterMode().matches(Mountable.WATER_MOVEMENT.FLOAT.name()) && super.canUse();
-//        } else {
-//            return super.canUse() && (!this.mountable.canFreeSwim());
-//        }
-        return false;
+        if (mountable.canSwim() && !mountable.isVehicle()) return mountable.getMajor() == MountTravel.Major.SWIM && mountable.getMinorMovement(MountTravel.Major.SWIM) == MountTravel.Minor.FLOAT;
+        return true;
     }
 }
