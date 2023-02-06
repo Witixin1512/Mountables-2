@@ -9,12 +9,12 @@ public class MountableWanderGoal extends RandomStrollGoal {
     private final Mountable mountable;
 
     public MountableWanderGoal(Mountable mountable) {
-        super(mountable, 0.5D, 100, false);
+        super(mountable, 0.5D, 10, false);
         this.mountable = mountable;
     }
 
     @Override
     public boolean canUse() {
-        return super.canUse() && mountable.getFollowMode() == (Mountable.WANDER);
+        return super.canUse() && mountable.getFollowMode() == Mountable.WANDER;
     }
 }
