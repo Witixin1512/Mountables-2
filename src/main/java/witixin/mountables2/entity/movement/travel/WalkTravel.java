@@ -37,9 +37,7 @@ public class WalkTravel implements MountMovement {
             }
             if (mount.getKeyStrokeMovement().spacebar() && !airborne){
                 airborne = true;
-                mod = new Vec3(0, jumpStrength, 0);
-                mount.triggerAnim(Mountable.HOP_CONTROLLER, Mountable.JUMP_ANIMATION_NAME);
-                mount.setOnGround(false);
+                mod = mount.jump(jumpStrength);
             }
             //If we're moving, either jumping or moving, scale by speedCoeficient, which is 1 in regular walk and 0.5 in slow walk
             mod.multiply(speedCoeficient, 1.0, speedCoeficient);
