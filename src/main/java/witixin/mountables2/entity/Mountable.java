@@ -1,5 +1,6 @@
 package witixin.mountables2.entity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fluids.FluidType;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
@@ -32,6 +34,7 @@ import witixin.mountables2.ClientReferences;
 import witixin.mountables2.Mountables2Mod;
 import witixin.mountables2.data.MountableData;
 import witixin.mountables2.data.MountableSerializer;
+import witixin.mountables2.entity.goal.MountableFloatGoal;
 import witixin.mountables2.entity.goal.MountableFollowGoal;
 import witixin.mountables2.entity.goal.MountableWanderGoal;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
@@ -63,6 +66,8 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     public static final byte WANDER = 1;
     public static final byte STAY = 2;
 
+    private static final double SIDEWAYS_FACTOR = 2d/3;
+
     public static final String TRANSPARENT_EMISSIVE_TEXTURE = "transparent";
     public static final String JUMP_ANIMATION_NAME = "jump";
     public static final String HOP_CONTROLLER = "hop_controller";
@@ -89,6 +94,8 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         //TODO Do Mountable AI movement.
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
+        this.goalSelector.addGoal(3, new MountableFloatGoal(this));
+
     }
 
     @Override
@@ -269,46 +276,53 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     @Override
     public void travel(Vec3 pTravelVector) {
         Vec3 newVector = pTravelVector;
-
         if (isAlive()) {
-            if (isVehicle() && getFirstPassenger() instanceof LivingEntity rider) {
-                rotateBodyTo(rider);
-                /********************handle rotation and moving forward************************/
-                double deltaX = 0, deltaY = 0, deltaZ = 0;
-                double rotation = this.getYRot() * (Mth.PI / 180F);
+            final boolean isBeingRidden = isVehicle() && getFirstPassenger() instanceof LivingEntity;
+            if (isBeingRidden) {
+                this.rotateBodyTo((LivingEntity) getFirstPassenger());
+            }
+            double deltaX = 0, deltaY = 0, deltaZ = 0;
+            final double rotation = this.getYRot() * (Mth.PI / 180F);
+            double speed = this.getAttributeValue(Attributes.MOVEMENT_SPEED);
+            if (isFlying()) speed = this.getAttributeValue(Attributes.FLYING_SPEED);
 
-                double speed = this.getAttributeValue(Attributes.MOVEMENT_SPEED);
-
-                if (isFlying())
-                    speed = this.getAttributeValue(Attributes.FLYING_SPEED);
-
-                //Set slow speed modifier last
-                if (getMinorMovement(currentTravelMethod.major()).equals(MountTravel.Minor.SLOW))
-                    speed /= 2.0d;
-
-                double sideWaysFactor = speed * 2 / 3;//about two thirds of frontal movement
-                double inverseX = keyStrokeMovement.forwards() && !keyStrokeMovement.backwards() ? 1 : -1;
-                double inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
+            if (isBeingRidden) {
+                final int inverseX = keyStrokeMovement.forwards() && !keyStrokeMovement.backwards() ? 1 : -1;
+                final int inverseZ = keyStrokeMovement.left() && !keyStrokeMovement.right() ? 1 : -1;
                 if (getKeyStrokeMovement().isFrontal())
-                    deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * sideWaysFactor : speed) * inverseX;
+                    deltaX = (keyStrokeMovement.isPurelyLateral() ? speed * SIDEWAYS_FACTOR : speed) * inverseX;
                 if (getKeyStrokeMovement().isLateral())
-                    deltaZ = (keyStrokeMovement.isPurelyFrontal() ? speed * sideWaysFactor : speed) * inverseZ;
+                    deltaZ = (keyStrokeMovement.isPurelyFrontal() ? speed * SIDEWAYS_FACTOR : speed) * inverseZ;
 
-                double sinXRot = Math.sin(-rotation) * deltaX;
-                double cosXRot = Math.cos(rotation) * deltaX;
-                double sinZRot = Math.sin(-rotation + Mth.PI / 2d) * deltaZ;
-                double cosZRot = Math.cos(rotation - Mth.PI / 2d) * deltaZ;
+                final double sinXRot = Math.sin(-rotation) * deltaX;
+                final double cosXRot = Math.cos(rotation) * deltaX;
+                final double sinZRot = Math.sin(-rotation + Mth.PI / 2d) * deltaZ;
+                final double cosZRot = Math.cos(rotation - Mth.PI / 2d) * deltaZ;
 
                 pTravelVector = new Vec3(sinXRot + sinZRot, deltaY, cosXRot + cosZRot);
-
                 newVector = currentTravelMethod.movement().travel(this, pTravelVector);
+                this.rotateBodyTo((LivingEntity) getFirstPassenger());
+                this.setDeltaMovement(this.getDeltaMovement().add(newVector));
+                super.travel(newVector);
             }
             else {
-               super.travel(currentTravelMethod.movement().travel(this, pTravelVector));
+                if (!this.level.isClientSide) {
+                    //None riding movement always runs on the serverside
+                    //Gotta figure out movement using the travelVector
+                    newVector = currentTravelMethod.movement().travel(this, pTravelVector);
+                    if (currentTravelMethod.minor() == MountTravel.Minor.HOP) this.setDeltaMovement(this.getDeltaMovement().add(newVector));
+                    else if (currentTravelMethod.major() != MountTravel.Major.FLY) {
+                        BlockPos targetPos = this.getNavigation().getTargetPos();
+                        BlockPos pos = this.getOnPos();
+                        if (targetPos != null && Mth.abs(targetPos.getY() - pos.getY()) < 2) {
+                            double jumpStrength = this.getAttributeValue(Attributes.JUMP_STRENGTH);
+                            if (targetPos.atY(0).distSqr(pos.atY(0)) < jumpStrength) newVector = newVector.add(this.jump(jumpStrength));
+                        }
+                    }
+                }
+                super.travel(newVector);
             }
         }
-        this.setDeltaMovement(this.getDeltaMovement().add(newVector));
-        super.travel(newVector);
     }
 
     public boolean canWalk() {
@@ -369,6 +383,13 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         this.setRot(this.getYRot(), this.getXRot());
         this.yBodyRot = this.getYRot();
         this.yHeadRot = this.yBodyRot;
+    }
+
+    public Vec3 jump(double jumpStrength) {
+        Vec3 vec = new Vec3(0, jumpStrength, 0);
+        this.triggerAnim(Mountable.HOP_CONTROLLER, Mountable.JUMP_ANIMATION_NAME);
+        this.setOnGround(false);
+        return vec;
     }
 
     @Override
