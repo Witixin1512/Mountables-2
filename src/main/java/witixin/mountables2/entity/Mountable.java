@@ -306,7 +306,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                 super.travel(newVector);
             }
             else {
-                if (!this.level.isClientSide) {
                     //None riding movement always runs on the serverside
                     //Gotta figure out movement using the travelVector
                     newVector = currentTravelMethod.movement().travel(this, pTravelVector);
@@ -319,7 +318,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                             if (targetPos.atY(0).distSqr(pos.atY(0)) < jumpStrength) newVector = newVector.add(this.jump(jumpStrength));
                         }
                     }
-                }
                 super.travel(newVector);
             }
         }
