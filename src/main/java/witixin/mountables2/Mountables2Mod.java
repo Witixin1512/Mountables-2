@@ -71,15 +71,10 @@ public class Mountables2Mod {
        Naming
        GeckoLib wiki
      */
-    public static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);    /*
-    - riding a mount with fly mode set to hop provides no forward movement, all buttons produce a jump instead although I can't reproduce it, probably something to do with the swapping bug
-    - jump and land animations do not play
-    - mount plays fly animation in air when not flying
-    - can't adjust seat position, speeds, jump strength on mounts
-     */
+    public static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_REGISTER = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final RegistryObject<EntityType<Mountable>> MOUNTABLE_ENTITY = ENTITY_REGISTER.register("mountable_entity",
-            () -> EntityType.Builder.of(Mountable::new, MobCategory.CREATURE).sized(1.0f, 1.0f).clientTrackingRange(10).build("mountable_entity"));
+            () -> EntityType.Builder.of(Mountable::new, MobCategory.CREATURE).sized(1.0f, 1.0f).clientTrackingRange(10).fireImmune().noSummon().build("mountable_entity"));
     private static final Item.Properties DEFAULT_PROPERTIES = new Item.Properties();
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> GLM_REG = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
 
@@ -98,7 +93,6 @@ public class Mountables2Mod {
 
 
     public Mountables2Mod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::attributeCreation);
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ENTITY_REGISTER.register(bus);
         ITEM_REGISTER.register(bus);
@@ -106,15 +100,16 @@ public class Mountables2Mod {
         SOUND_REGISTER.register(bus);
         RECIPE_SER_REG.register(bus);
         RECIPE_TYPE_REG.register(bus);
-        MinecraftForge.EVENT_BUS.addListener(this::onDataPackLoad);
+        bus.addListener(this::attributeCreation);;
         bus.addListener(this::addResourcePackListener);
+        MinecraftForge.EVENT_BUS.addListener(this::onDataPackLoad);
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
         PacketHandler.init();
         MovementRegistry.INSTANCE.load();
     }
 
     public static final RegistryObject<Item> MOUNTABLE_CORE = ITEM_REGISTER.register("mountable_core",
-            () -> new Item(DEFAULT_PROPERTIES.stacksTo(1).fireResistant()));
+            () -> new Item(DEFAULT_PROPERTIES.stacksTo(1)));
 
     public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER_REG = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MODID);
     public static final RegistryObject<MountableSerializer> MOUNTABLE_RECIPE_SERAILIZER = RECIPE_SER_REG.register("custom_mountables", MountableSerializer::new);
@@ -168,7 +163,12 @@ public class Mountables2Mod {
     }
 
     public static final RegistryObject<Item> COMMAND_CHIP = ITEM_REGISTER.register("command_chip",
-            () -> new CommandChip(DEFAULT_PROPERTIES.stacksTo(1).fireResistant()));
+            () -> new CommandChip(DEFAULT_PROPERTIES.stacksTo(1).fireResistant())  {
+                @Override
+                public boolean canBeHurtBy(DamageSource pDamageSource) {
+                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.isExplosion();
+                }
+            } );
 
     public static ResourceLocation rl(String s) {
         return new ResourceLocation(MODID, s);
