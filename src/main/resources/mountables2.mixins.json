@@ -1,0 +1,18 @@
+
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "witixin.mountables2.mixin",
+  "refmap": "mountables2.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+  ],
+  "client": [
+    "GeckolibMissingAnimationMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+
+}
+  

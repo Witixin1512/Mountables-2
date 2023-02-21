@@ -1,17 +1,22 @@
 buildscript {
     repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.minecraftforge.net'}
         mavenCentral()
-        maven {url = 'https://maven.parchmentmc.org'}
+        maven { url = 'https://maven.parchmentmc.org'}
+        maven {
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.19.3'
@@ -35,6 +40,8 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--username', 'Dev###'
+            jvmArg("-Dmixin.debug.verbose=true")
+            jvmArg("-Dmixin.debug.export=true")
             mods {
                 mountables2 {
                     source sourceSets.main
@@ -112,8 +119,15 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.19.3-44.1.0'
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19.3:4.0.2')
     //runtimeOnly fg.deobf("mezz.jei:jei-1.19.3:11.4.1.113")
+}
+
+mixin {
+    add sourceSets.main, "mountables2.refmap.json"
+    config "mountables2.mixins.json"
+
 }
 
 jar {
