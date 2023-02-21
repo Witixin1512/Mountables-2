@@ -19,6 +19,7 @@
   "gui.mountables2.ai.float" : "Float",
   "gui.mountables2.ai.sink" : "Sink",
   "gui.mountables2.ai.jump" : "Jump",
+  "gui.mountables2.ai.none" : "None",
 
   "gui.mountables2.chip.follow_type": "Follow Type",
   "gui.mountables2.chip.wander" : "Wander",

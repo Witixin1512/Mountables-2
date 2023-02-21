@@ -16,12 +16,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fluids.FluidType;
-import org.apache.logging.log4j.LogManager;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
@@ -37,6 +39,7 @@ import witixin.mountables2.data.MountableSerializer;
 import witixin.mountables2.entity.goal.MountableFloatGoal;
 import witixin.mountables2.entity.goal.MountableFollowGoal;
 import witixin.mountables2.entity.goal.MountableWanderGoal;
+import witixin.mountables2.entity.navigation.FlyingAmphibiousPathNavigation;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
 import witixin.mountables2.entity.movement.MountTravel;
 import witixin.mountables2.entity.movement.MovementRegistry;
@@ -91,33 +94,30 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     @Override
     protected void registerGoals() {
-        //TODO Do Mountable AI movement.
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
         this.goalSelector.addGoal(3, new MountableFloatGoal(this));
-
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim()) {
+        if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim() && this.canMinorMove(MountTravel.Major.SWIM)) {
             setMajor(MountTravel.Major.SWIM);
-        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
+        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk() && this.canMinorMove(MountTravel.Major.WALK)) {
             setMajor(MountTravel.Major.WALK);
             if (this.isFlying()) {
-                this.triggerAnim(LAND_CONTROLLER, LAND_ANIMATION_NAME);
                 setFlying(false);//walk when landing
             }
-        } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY) && canFly()) {
+        } else if (this.isFlying() && !currentTravelMethod.major().equals(MountTravel.Major.FLY) && canFly() && this.canMinorMove(MountTravel.Major.FLY)) {
             setMajor(MountTravel.Major.FLY);
         }
     }
 
     public void ensureAbilities() {
-        final boolean canWalk = this.canWalk();
-        final boolean canSwim = this.canSwim();
-        final boolean canFly = this.canFly();
+        final boolean canWalk = this.canWalk() && this.canMinorMove(MountTravel.Major.WALK);
+        final boolean canSwim = this.canSwim() && this.canMinorMove(MountTravel.Major.SWIM);
+        final boolean canFly = this.canFly() && this.canMinorMove(MountTravel.Major.FLY);
 
         if (!canWalk && this.getMajor().equals(MountTravel.Major.WALK)) {
             setMajor(MountTravel.Major.SWIM);
@@ -168,6 +168,11 @@ public class Mountable extends TamableAnimal implements GeoEntity {
             if (minor == MountTravel.Minor.HOP && major == MountTravel.Major.FLY) this.setNoGravity(false);
         }
         currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
+    }
+
+    public boolean canMinorMove(MountTravel.Major major) {
+        return true;
+        //return this.getMinorMovement(major) != MountTravel.Minor.NONE;
     }
 
     public boolean isFlying() {
@@ -270,12 +275,13 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     }
 
     public boolean causeFallDamage(float pFallDistance, float pMultiplier, DamageSource pSource) {
+        this.triggerAnim(LAND_CONTROLLER, LAND_ANIMATION_NAME);
         return false;
     }
 
     @Override
     public void travel(Vec3 pTravelVector) {
-        Vec3 newVector = pTravelVector;
+        Vec3 newVector;
         if (isAlive()) {
             final boolean isBeingRidden = isVehicle() && getFirstPassenger() instanceof LivingEntity;
             if (isBeingRidden) {
@@ -395,15 +401,12 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         return EntityDimensions.scalable(this.entityData.get(ENTITY_WIDTH), this.entityData.get(ENTITY_HEIGHT));
     }
 
-
     private static final RawAnimation SWIM_ANIMATION = RawAnimation.begin().thenLoop("swim");
     private static final RawAnimation WALK_ANIMATION = RawAnimation.begin().thenLoop("walk");
     private static final RawAnimation FLY_ANIMATION = RawAnimation.begin().thenLoop("fly");
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("idle");
     private static final RawAnimation HOP_ANIMATION = RawAnimation.begin().thenPlay(JUMP_ANIMATION_NAME);
     private static final RawAnimation LAND_ANIMATION = RawAnimation.begin().thenPlay(LAND_ANIMATION_NAME);
-
-    //TODO GeckoLib
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -419,10 +422,11 @@ public class Mountable extends TamableAnimal implements GeoEntity {
             }
             return state.setAndContinue(IDLE_ANIMATION);
         }));
-        controllers.add(new AnimationController<>(this, HOP_CONTROLLER, 1, state -> PlayState.CONTINUE)
+        controllers.add(new AnimationController<>(this, HOP_CONTROLLER, 5, state -> PlayState.STOP)
                 .triggerableAnim(JUMP_ANIMATION_NAME, HOP_ANIMATION));
-        controllers.add(new AnimationController<>(this, LAND_CONTROLLER, 1, state -> PlayState.CONTINUE)
+        controllers.add(new AnimationController<>(this, LAND_CONTROLLER, 5, state -> PlayState.STOP)
                 .triggerableAnim(LAND_ANIMATION_NAME, LAND_ANIMATION));
+
     }
 
     @Override

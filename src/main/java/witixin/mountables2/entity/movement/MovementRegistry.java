@@ -1,6 +1,7 @@
 package witixin.mountables2.entity.movement;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.entity.movement.travel.FlyHopTravel;
 import witixin.mountables2.entity.movement.travel.HopTravel;
@@ -36,12 +37,18 @@ public enum MovementRegistry {
         return registry.stream().filter(mountTravel -> mountTravel.major() == major).toList();
     }
 
+    public static Vec3 empty(Mountable mountable, Vec3 original) {
+        return Vec3.ZERO;
+    }
+
     public void load() {
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NORMAL, new WalkTravel(1.0)));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.SLOW, new WalkTravel(0.5)));
 
         registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.HOP, new HopTravel()));
+
+        //registerMovement(new MountTravel(MountTravel.Major.WALK, MountTravel.Minor.NONE, new WalkTravel(0.0)));
 
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NORMAL, (mount, travelVector) ->
         {
@@ -57,6 +64,8 @@ public enum MovementRegistry {
         }));
 
         registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.HOP, new FlyHopTravel()));
+
+        //registerMovement(new MountTravel(MountTravel.Major.FLY, MountTravel.Minor.NONE, MovementRegistry::empty));
 
         registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NORMAL, (mount, travelVector) ->
 
@@ -92,5 +101,7 @@ public enum MovementRegistry {
                 return travelVec.multiply(0.5, 1.0, 0.5);
             }
         }));
+
+        //registerMovement(new MountTravel(MountTravel.Major.SWIM, MountTravel.Minor.NONE, MovementRegistry::empty));
     }
 }
