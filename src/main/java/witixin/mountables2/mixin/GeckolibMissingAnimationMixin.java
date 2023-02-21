@@ -21,6 +21,8 @@ public class GeckolibMissingAnimationMixin {
 
     private GeoAnimatable geoAnimatable;
 
+    //TODO Add Conditional feature
+
     /**
      * Should theoretically unconditionally shutup geckolib's printer.
      */
