@@ -36,17 +36,7 @@ public record MountTravel(Major major,
 
 
     public enum Major {
-        FLY(true), WALK(false), SWIM(false);
-
-        private final boolean noGravity;
-
-        Major(boolean noGravity){
-            this.noGravity = noGravity;
-        }
-
-        public boolean isNoGravity() {
-            return noGravity;
-        }
+        FLY, WALK, SWIM;
     }
 
     /**

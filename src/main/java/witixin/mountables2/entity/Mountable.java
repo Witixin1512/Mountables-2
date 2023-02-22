@@ -164,8 +164,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
         if (!this.level.isClientSide){
             this.entityData.set(MAJOR_MOVEMENT, major.name());
             this.entityData.set(this.getEDAForMinor(major), minor.name());
-            this.setNoGravity(major.isNoGravity());
-            if (minor == MountTravel.Minor.HOP && major == MountTravel.Major.FLY) this.setNoGravity(false);
+            this.setNoGravity(major == MountTravel.Major.FLY && minor == MountTravel.Minor.NORMAL);
         }
         currentTravelMethod = MovementRegistry.INSTANCE.getMovement(major, minor);
     }
@@ -275,7 +274,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     @Override
     public void travel(Vec3 pTravelVector) {
-        Vec3 newVector = pTravelVector;
+        Vec3 newVector;
         if (isAlive()) {
             final boolean isBeingRidden = isVehicle() && getFirstPassenger() instanceof LivingEntity;
             if (isBeingRidden) {
