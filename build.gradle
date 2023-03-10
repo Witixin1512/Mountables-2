@@ -20,7 +20,7 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 def mc_version = '1.19.3'
-version = mc_version + '-BETA-1.0.2'
+version = mc_version + '-BETA-1.0.3'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -39,22 +39,8 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            args '--username', 'Dev###'
             jvmArg("-Dmixin.debug.verbose=true")
             jvmArg("-Dmixin.debug.export=true")
-            mods {
-                mountables2 {
-                    source sourceSets.main
-                }
-            }
-        }
-        client2 {
-            workingDirectory project.file('runClientAlt')
-            setTaskName("runClientAlt")
-            properties 'mixin.env.remapRefMap': 'true'
-            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
             mods {
                 mountables2 {
                     source sourceSets.main
@@ -74,7 +60,6 @@ minecraft {
                 }
             }
         }
-
         data {
             workingDirectory project.file('run_data')
             properties 'mixin.env.remapRefMap': 'true'
@@ -96,7 +81,6 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     //geckolib
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
-
     maven {
         // location of the maven that hosts JEI files
         name = "Progwml6 maven"

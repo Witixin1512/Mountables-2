@@ -16,6 +16,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -81,6 +85,9 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     private MountTravel currentTravelMethod;
     private KeyStrokeMovement keyStrokeMovement = KeyStrokeMovement.NONE;
 
+    private FlyingPathNavigation flyingNav;
+    private WaterBoundPathNavigation waterNav;
+
     public Mountable(EntityType<? extends Mountable> type, Level level) {
         super(Mountables2Mod.MOUNTABLE_ENTITY.get(), level);
         this.dimensions = getDimensions(Pose.STANDING); //pose
@@ -91,7 +98,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
 
     @Override
     protected void registerGoals() {
-        //TODO Do Mountable AI movement.
         this.goalSelector.addGoal(3, new MountableFollowGoal(this));
         this.goalSelector.addGoal(3, new MountableWanderGoal(this));
         this.goalSelector.addGoal(3, new MountableFloatGoal(this));
@@ -99,11 +105,71 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     }
 
     @Override
+    protected PathNavigation createNavigation(Level pLevel) {
+        this.flyingNav = new FlyingPathNavigation(this, level);
+        this.waterNav = new WaterBoundPathNavigation(this, level);
+        return super.createNavigation(pLevel);
+    }
+
+    @Override
+    public PathNavigation getNavigation() {
+        return switch (getMajor()) {
+            case FLY -> this.flyingNav;
+            case WALK -> this.navigation;
+            case SWIM -> this.waterNav;
+        };
+    }
+
+    /**
+     * Uses getNavigation() to return the proper navigation rather than the field.
+     */
+    @Override
+    public void serverAiStep() {
+        ++this.noActionTime;
+        this.level.getProfiler().push("sensing");
+        this.getSensing().tick();
+        this.level.getProfiler().pop();
+        int i = this.level.getServer().getTickCount() + this.getId();
+        if (i % 2 != 0 && this.tickCount > 1) {
+            this.level.getProfiler().push("targetSelector");
+            this.targetSelector.tickRunningGoals(false);
+            this.level.getProfiler().pop();
+            this.level.getProfiler().push("goalSelector");
+            this.goalSelector.tickRunningGoals(false);
+            this.level.getProfiler().pop();
+        } else {
+            this.level.getProfiler().push("targetSelector");
+            this.targetSelector.tick();
+            this.level.getProfiler().pop();
+            this.level.getProfiler().push("goalSelector");
+            this.goalSelector.tick();
+            this.level.getProfiler().pop();
+        }
+
+        this.level.getProfiler().push("navigation");
+        this.getNavigation().tick();
+        this.level.getProfiler().pop();
+        this.level.getProfiler().push("mob tick");
+        this.customServerAiStep();
+        this.level.getProfiler().pop();
+        this.level.getProfiler().push("controls");
+        this.level.getProfiler().push("move");
+        this.moveControl.tick();
+        this.level.getProfiler().popPush("look");
+        this.lookControl.tick();
+        this.level.getProfiler().popPush("jump");
+        this.jumpControl.tick();
+        this.level.getProfiler().pop();
+        this.level.getProfiler().pop();
+        this.sendDebugPackets();
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (this.isInWaterOrBubble() && !currentTravelMethod.major().equals(MountTravel.Major.SWIM) && canSwim()) {
             setMajor(MountTravel.Major.SWIM);
-        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk()) {
+        } else if (this.isOnGround() && !currentTravelMethod.major().equals(MountTravel.Major.WALK) && canWalk() && !this.isInWaterOrBubble()) {
             setMajor(MountTravel.Major.WALK);
             if (this.isFlying()) {
                 this.triggerAnim(LAND_CONTROLLER, LAND_ANIMATION_NAME);
@@ -402,7 +468,6 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     private static final RawAnimation HOP_ANIMATION = RawAnimation.begin().thenPlay(JUMP_ANIMATION_NAME);
     private static final RawAnimation LAND_ANIMATION = RawAnimation.begin().thenPlay(LAND_ANIMATION_NAME);
 
-    //TODO GeckoLib
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -418,9 +483,9 @@ public class Mountable extends TamableAnimal implements GeoEntity {
             }
             return state.setAndContinue(IDLE_ANIMATION);
         }));
-        controllers.add(new AnimationController<>(this, HOP_CONTROLLER, 1, state -> PlayState.CONTINUE)
+        controllers.add(new AnimationController<>(this, HOP_CONTROLLER, 1, state -> PlayState.STOP)
                 .triggerableAnim(JUMP_ANIMATION_NAME, HOP_ANIMATION));
-        controllers.add(new AnimationController<>(this, LAND_CONTROLLER, 1, state -> PlayState.CONTINUE)
+        controllers.add(new AnimationController<>(this, LAND_CONTROLLER, 1, state -> PlayState.STOP)
                 .triggerableAnim(LAND_ANIMATION_NAME, LAND_ANIMATION));
     }
 

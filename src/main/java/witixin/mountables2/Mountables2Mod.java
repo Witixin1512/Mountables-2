@@ -58,18 +58,6 @@ public class Mountables2Mod {
 
     //TODO WIKI!
     /*
-       4 files
-       Json -> IDs
-       Model -> Key model (Multiple models / mount - meh)
-       Anim -> Naming
-       Texture -> Naming
-
-       Optionals:
-       Sounds (link to fcw)
-       Emissive texxes
-
-       Naming
-       GeckoLib wiki
      */
     public static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_REGISTER = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);

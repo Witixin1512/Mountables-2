@@ -22,13 +22,11 @@ import java.util.EnumSet;
 public class MountableFollowGoal extends Goal {
         private final Mountable mountable;
         private LivingEntity owner;
-        private final PathNavigation navigation;
         private int timeToRecalcPath;
         private float oldWaterCost;
 
         public MountableFollowGoal(Mountable mountable) {
             this.mountable = mountable;
-            this.navigation = mountable.getNavigation();
             this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
         }
 
@@ -61,7 +59,7 @@ public class MountableFollowGoal extends Goal {
          * Returns whether an in-progress EntityAIBase should continue executing
          */
         public boolean canContinueToUse() {
-            if (this.navigation.isDone()) {
+            if (this.mountable.getNavigation().isDone()) {
                 return false;
             } else if (this.mountable.isOrderedToSit()) {
                 return false;
@@ -84,7 +82,7 @@ public class MountableFollowGoal extends Goal {
          */
         public void stop() {
             this.owner = null;
-            this.navigation.stop();
+            this.mountable.getNavigation().stop();
             this.mountable.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
         }
 
@@ -99,7 +97,7 @@ public class MountableFollowGoal extends Goal {
                     if (this.mountable.distanceToSqr(this.owner) >= this.getFollowRange() * this.getFollowRange()) {
                         this.teleportToOwner();
                     } else {
-                        this.navigation.moveTo(this.owner, 1.0);
+                        this.mountable.getNavigation().moveTo(this.owner, 1.0);
                     }
 
                 }
@@ -128,16 +126,21 @@ public class MountableFollowGoal extends Goal {
                 return false;
             } else {
                 this.mountable.moveTo((double)pX + 0.5D, (double)pY, (double)pZ + 0.5D, this.mountable.getYRot(), this.mountable.getXRot());
-                this.navigation.stop();
+                this.mountable.getNavigation().stop();
                 return true;
             }
         }
 
         private boolean canTeleportTo(BlockPos pPos) {
             BlockPathTypes blockpathtypes = WalkNodeEvaluator.getBlockPathTypeStatic(this.mountable.level, pPos.mutable());
-            if (blockpathtypes != BlockPathTypes.WALKABLE) {
+            if (blockpathtypes != BlockPathTypes.WALKABLE && mountable.getMajor() == MountTravel.Major.WALK) {
                 return false;
-            } else {
+            }
+            else if (blockpathtypes != BlockPathTypes.WATER && mountable.getMajor() == MountTravel.Major.SWIM) {
+                return false;
+            }
+            else {
+                //Flying
                 BlockState blockstate = this.mountable.level.getBlockState(pPos.below());
                 if (!(mountable.getMajor() == MountTravel.Major.FLY) && blockstate.getBlock() instanceof LeavesBlock) {
                     return false;
