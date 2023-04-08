@@ -19,10 +19,8 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void registerCustomTab(final CreativeModeTabEvent.Register event) {
-
         MOUNTABLES_TAB = event.registerCreativeModeTab(Mountables2Mod.rl("creative_tab"), (configurator) -> configurator.icon(() -> Mountables2Mod.MOUNTABLE.get().getDefaultInstance())
                 .title(Component.translatable("itemGroup.mountables2.ctab"))
-
                 //FeatureFlags, (ItemStack, Visibility), Permissions
                 .displayItems((features, output) -> {
                     output.accept(Mountables2Mod.MYSTERIOUS_FRAGMENT.get());
