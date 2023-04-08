@@ -10,6 +10,9 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import software.bernie.geckolib.event.GeoRenderEvent;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import witixin.mountables2.entity.Mountable;
 import witixin.mountables2.entity.movement.KeyStrokeMovement;
 import witixin.mountables2.network.PacketHandler;
@@ -33,7 +36,7 @@ public class ClientForgeEvents {
         return map;
     });
 
-    @SubscribeEvent
+    //@SubscribeEvent
     public static void soundEvent(final PlaySoundEvent event) {
         WeighedSoundEvents weighedsoundevents = event.getSound().resolve(event.getEngine().soundManager);
         final String toUse = event.getSound().getLocation().getPath().split("\\.")[1];

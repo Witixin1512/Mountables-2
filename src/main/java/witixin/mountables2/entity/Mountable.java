@@ -292,8 +292,9 @@ public class Mountable extends TamableAnimal implements GeoEntity {
     }
 
     @Override
-    public Entity getControllingPassenger() {
-        return this.getFirstPassenger();
+    @Nullable
+    public LivingEntity getControllingPassenger() {
+        return this.getFirstPassenger() instanceof LivingEntity entity ? entity : null;
     }
 
     public byte getFollowMode() {
@@ -324,7 +325,7 @@ public class Mountable extends TamableAnimal implements GeoEntity {
                 return InteractionResult.sidedSuccess(true);
             } else {
                 pPlayer.sendSystemMessage(Component.translatable("msg.mountables2.chip.owner"));
-                return InteractionResult.FAIL;
+                return InteractionResult.PASS;
             }
 
         }

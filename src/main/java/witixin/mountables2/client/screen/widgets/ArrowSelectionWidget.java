@@ -32,11 +32,11 @@ public class ArrowSelectionWidget extends AbstractWidget {
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(PoseStack poseStack, int p_268034_, int p_268009_, float p_268085_){
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, toRender);
-        blit(pPoseStack, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
+        blit(poseStack, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
     }
 
 

@@ -16,7 +16,7 @@ import java.util.Queue;
 
 
 @Mixin(AnimationProcessor.class)
-@Debug(export = true, print = true)
+//@Debug(export = true, print = true)
 public class GeckolibMissingAnimationMixin {
 
     private GeoAnimatable geoAnimatable;

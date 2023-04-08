@@ -29,9 +29,8 @@ public class SwitchableWidget extends AbstractWidget {
         this.setY(this.getY() + pY);
     }
 
-
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick){
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, this.isEnabled() ? BIG_BUTTON_ON : BIG_BUTTON_OFF);
@@ -39,6 +38,7 @@ public class SwitchableWidget extends AbstractWidget {
         float amount = Minecraft.getInstance().font.width(renderText);
         Minecraft.getInstance().font.drawShadow(pPoseStack, renderText, this.getX() + width/2f - amount / 2f, this.getY() + 6, 0xffffff);
         //fill(pPoseStack, getX(), getY(), getX() + width, getY() + height, 0xaaff0000);
+
     }
 
     public boolean isEnabled() {

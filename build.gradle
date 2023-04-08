@@ -19,8 +19,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-def mc_version = '1.19.3'
-version = mc_version + '-BETA-1.0.0'
+def mc_version = '1.19.4'
+version = mc_version + '-BETA-1.1.1'
 group = 'net.witixin.mountables2' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mountables2'
 
@@ -28,8 +28,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    mappings channel: 'parchment', version: '2022.12.18-1.19.3'
-    //mappings channel: 'official', version: '1.19.3'
+    mappings channel: 'parchment', version: '1.19.3-2022.12.18-1.19.4'
+    //mappings channel: 'official', version: '1.19.4'
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
     runs {
@@ -102,16 +102,15 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.3-44.1.0'
+    minecraft 'net.minecraftforge:forge:1.19.4-45.0.43'
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19.3:4.0.2')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19.4:4.1.0')
     //runtimeOnly fg.deobf("mezz.jei:jei-1.19.3:11.4.1.113")
 }
 
 mixin {
     add sourceSets.main, "mountables2.refmap.json"
     config "mountables2.mixins.json"
-
 }
 
 jar {

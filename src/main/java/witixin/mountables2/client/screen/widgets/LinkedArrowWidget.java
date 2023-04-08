@@ -1,9 +1,11 @@
 package witixin.mountables2.client.screen.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 
 public class LinkedArrowWidget extends AbstractWidget {
@@ -21,10 +23,11 @@ public class LinkedArrowWidget extends AbstractWidget {
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick){
         left.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         right.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         Minecraft.getInstance().font.drawShadow(pPoseStack, buttonName.charAt(0) + buttonName.substring(1).toLowerCase(), this.getX() + 52 - Minecraft.getInstance().font.width(buttonName) / 2f, this.getY() + 5, 0xffffff);
+
     }
 
     @Override

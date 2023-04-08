@@ -7,6 +7,8 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import software.bernie.geckolib.event.GeoRenderEvent;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 import witixin.mountables2.client.MountableRenderer;
 
 
@@ -22,7 +24,7 @@ public class ClientEvents {
                 .title(Component.translatable("itemGroup.mountables2.ctab"))
 
                 //FeatureFlags, (ItemStack, Visibility), Permissions
-                .displayItems((features, output, hasPermissions) -> {
+                .displayItems((features, output) -> {
                     output.accept(Mountables2Mod.MYSTERIOUS_FRAGMENT.get());
                     output.accept(Mountables2Mod.MOUNTABLE_CORE.get());
                     output.accept(Mountables2Mod.MOUNTABLE.get());
@@ -30,7 +32,6 @@ public class ClientEvents {
                 })
                 .build());
     }
-
 
     @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {

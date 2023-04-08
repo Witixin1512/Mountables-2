@@ -41,13 +41,17 @@ public class PackFinderManager {
         public void loadPacks(Consumer<Pack> pInfoConsumer) {
 
             Pack.ResourcesSupplier pack$resourcessupplier = (stringName) ->
-                new PathPackResources(stringName, rootFile.toPath(), true) {
+                    //Used to actually get the resource, keep it to false so it doesn't think the files exist already.
+                new PathPackResources(stringName, rootFile.toPath(), false) {
+
+                //Hide our Pack from appearing in the menu.
                 @Override
                     public boolean isHidden() {return true;}
                 };
             Pack.Info pack$info = Pack.readPackInfo(Mountables2Mod.MODID + ":" + rootFile.getName(), pack$resourcessupplier);
             if (rootFile.exists()) {
-                Pack pack = Pack.create(Mountables2Mod.MODID + ":" + rootFile.getName(), Component.translatable("gui.mountables2.pack_name", type.toString().toLowerCase(Locale.ROOT)), true, pack$resourcessupplier, pack$info, type, Pack.Position.BOTTOM, false, PackSource.DEFAULT);
+                //Required and builtin so that it's added and enabled automatically.
+                Pack pack = Pack.create(Mountables2Mod.MODID + ":" + rootFile.getName(), Component.translatable("gui.mountables2.pack_name", type.toString().toLowerCase(Locale.ROOT)), true, pack$resourcessupplier, pack$info, type, Pack.Position.BOTTOM, false, PackSource.BUILT_IN);
                 pInfoConsumer.accept(pack);
             }
 

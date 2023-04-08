@@ -1,6 +1,7 @@
 package witixin.mountables2.data;
 
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -40,9 +41,10 @@ public record MountableData(ResourceLocation recipeName, String uniqueName, doub
     }
 
     @Override
-    public ItemStack assemble(Container pContainer) {
+    public ItemStack assemble(Container p_44001_, RegistryAccess p_267165_){
         return ItemStack.EMPTY;
     }
+
 
     @Override
     public boolean canCraftInDimensions(int pWidth, int pHeight) {
@@ -50,7 +52,7 @@ public record MountableData(ResourceLocation recipeName, String uniqueName, doub
     }
 
     @Override
-    public ItemStack getResultItem() {
+    public ItemStack getResultItem(RegistryAccess access) {
         return ItemStack.EMPTY;
     }
 

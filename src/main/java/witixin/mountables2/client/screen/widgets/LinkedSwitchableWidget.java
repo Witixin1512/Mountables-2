@@ -20,9 +20,8 @@ public class LinkedSwitchableWidget extends AbstractWidget {
             switchableWidget.updatePos(pX,  pY);
         }
     }
-
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick){
         for (SwitchableWidget w : widgets) {
             w.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }

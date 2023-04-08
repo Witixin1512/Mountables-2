@@ -1,9 +1,6 @@
 package witixin.mountables2;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
-import net.minecraft.Util;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -13,11 +10,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Panda;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,12 +27,15 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.event.GeoRenderEvent;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 import witixin.mountables2.data.ChestLootModifier;
 import witixin.mountables2.data.MountableData;
 import witixin.mountables2.data.MountableSerializer;
@@ -74,7 +73,7 @@ public class Mountables2Mod {
             () -> new Item(DEFAULT_PROPERTIES.fireResistant()) {
                 @Override
                 public boolean canBeHurtBy(DamageSource pDamageSource) {
-                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.isExplosion();
+                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.is(DamageTypes.EXPLOSION);
                 }
             });
     public static final RegistryObject<SoundEvent> EMPTY_SOUND_EVENT = SOUND_REGISTER.register("empty", () -> SoundEvent.createVariableRangeEvent(rl("empty")));
@@ -88,13 +87,14 @@ public class Mountables2Mod {
         SOUND_REGISTER.register(bus);
         RECIPE_SER_REG.register(bus);
         RECIPE_TYPE_REG.register(bus);
-        bus.addListener(this::attributeCreation);;
+        bus.addListener(this::attributeCreation);
         bus.addListener(this::addResourcePackListener);
         MinecraftForge.EVENT_BUS.addListener(this::onDataPackLoad);
         MinecraftForge.EVENT_BUS.addListener(this::villagerEvent);
         PacketHandler.init();
         MovementRegistry.INSTANCE.load();
     }
+
 
     public static final RegistryObject<Item> MOUNTABLE_CORE = ITEM_REGISTER.register("mountable_core",
             () -> new Item(DEFAULT_PROPERTIES.stacksTo(1)));
@@ -128,7 +128,7 @@ public class Mountables2Mod {
             () -> new MountableItem(DEFAULT_PROPERTIES.stacksTo(1)) {
                 @Override
                 public boolean canBeHurtBy(DamageSource pDamageSource) {
-                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.isExplosion();
+                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.is(DamageTypes.EXPLOSION);
                 }
             });
 
@@ -154,7 +154,7 @@ public class Mountables2Mod {
             () -> new CommandChip(DEFAULT_PROPERTIES.stacksTo(1).fireResistant())  {
                 @Override
                 public boolean canBeHurtBy(DamageSource pDamageSource) {
-                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.isExplosion();
+                    return super.canBeHurtBy(pDamageSource) && !pDamageSource.is(DamageTypes.EXPLOSION);
                 }
             } );
 

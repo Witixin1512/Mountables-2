@@ -24,7 +24,7 @@ public class PackMCMetaTemplate {
     public PackMCMetaTemplate(File containingDirectory, String description, PackType type) {
         this.template = TemplateFile.of(PackType.SERVER_DATA, new ResourceLocation(Mountables2Mod.MODID, "pack.mcmeta"));
         template.setValue("PACK_DESCRIPTION", description);
-        template.setValue("PACK_FORMAT", String.valueOf(type.getVersion(SharedConstants.getCurrentVersion())));
+        template.setValue("PACK_FORMAT", String.valueOf(SharedConstants.getCurrentVersion().getPackVersion(type)));
         this.mcmetaFile = new File(containingDirectory, "pack.mcmeta");
     }
 
