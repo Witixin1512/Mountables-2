@@ -1,5 +1,5 @@
 # Mountables-2
-A minecraft 1.19.3 mod that adds data driven rideable entities!
+A minecraft 1.19.4 mod that adds data driven rideable entities!
 
 ## Has a custom built in ResourceLoader!
 
